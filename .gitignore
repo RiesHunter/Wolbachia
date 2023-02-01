@@ -2,4 +2,4 @@
 data/reads
 .Rproj.user
 .Rproj
-..DS_Store
+**/.DS_Store
