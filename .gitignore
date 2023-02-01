@@ -1,5 +1,9 @@
 # private data directories
 data/reads
+
+# R project files
 .Rproj.user
 .Rproj
-**/.DS_Store
+
+# Can't seem to get rid of this
+.DS_Store
