@@ -5,5 +5,5 @@ data/reads
 .Rproj.user
 .Rproj
 
-# Can't seem to get rid of this
+# Remove .DS_Store (apparently you have to delete old copies)
 .DS_Store
