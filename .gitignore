@@ -1,2 +1,4 @@
 # private data directories
 data/reads
+.Rproj.user
+.Rproj
