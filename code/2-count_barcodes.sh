@@ -3,7 +3,6 @@
 SECONDS=0
 echo ""; echo "-------------------- Starting barcode analyses... --------------------"
 
-
 ### ---------------------------------------------------------------------------------------------------- ###
 ## Parameters
 workingdir="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/test"
@@ -72,16 +71,19 @@ kmercountexact.sh \
   fastadump=t rcomp=f ow=t 2>>_stderr.txt
 
 ## Generate tsv for barcode counts
-seqkit fx2tab ./06_norm/kmer_counts_${sample}.fasta -H > ./06_norm/counts_BConly_${sample}.tsv
-
+seqkit fx2tab ./06_norm/kmer_counts_${sample}.fasta -H > ./06_norm/counts_BConly_${sample}.tsv 2>>_stderr.txt
 done
-ls 06_norm
-exit 1
 
+### ---------------------------------------------------------------------------------------------------- ###
 ## Clean up
-mkdir ./barcode_analyses
-mv *relaxed*.fastq ./barcode_analyses
-mv *.fasta ./barcode_analyses
-mv *relaxed*.bam ./barcode_analyses
-mv *relaxed*.bam.bai ./barcode_analyses
-mv *.tsv ./barcode_analyses
+mkdir ./15_barcode_analyses
+mv ./06_norm/*relaxed*.fastq    ./15_barcode_analyses
+mv ./06_norm/*.fasta            ./15_barcode_analyses
+mv ./06_norm/*relaxed*.bam      ./15_barcode_analyses
+mv ./06_norm/*relaxed*.bam.bai  ./15_barcode_analyses
+mv ./06_norm/*.tsv              ./15_barcode_analyses
+
+## Time end
+echo ""; duration=$(($SECONDS / 60))
+echo "$(($duration / 60)) hours and $(($duration)) minutes elapsed."; echo ""
+echo "-------------------- Barcode analyses completed! --------------------"; echo ""
