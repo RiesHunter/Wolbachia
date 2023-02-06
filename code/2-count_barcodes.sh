@@ -5,7 +5,7 @@ echo ""; echo "-------------------- Starting barcode analyses... ---------------
 
 ### ---------------------------------------------------------------------------------------------------- ###
 ## Parameters
-workingdir="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/test"
+workingdir="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run"
 reference="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/refseqs/PRVABC59.fasta"
 
 ## Index
