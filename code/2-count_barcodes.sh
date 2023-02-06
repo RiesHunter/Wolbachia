@@ -41,9 +41,15 @@ n=$(( n + 1 ))
 echo "[$n/$x]: ${sample}"
 
 ## Align processed paired-end reads to reference with default settings
-bwa mem -t 4 $reference ./06_norm/06-norm_${sample}_L001_r1.fastq \
-  ./06_norm/06-norm_${sample}_L001_r2.fastq > ./06_norm/relaxed_norm_${sample}.bam  2>>_stderr.txt
+#bwa mem -t 4 $reference ./06_norm/06-norm_${sample}_L001_r1.fastq \
+#  ./06_norm/06-norm_${sample}_L001_r2.fastq > ./06_norm/relaxed_norm_${sample}.bam  2>>_stderr.txt
 
+## sort and index alignment
+#samtools sort ./06_norm/relaxed_norm_${sample}.bam > ./06_norm/sorted_relaxed_norm_${sample}.bam
+#samtools index ./06_norm/sorted_relaxed_norm_${sample}.bam
+
+## extract aligned reads overlapping the barcode region
+samtools view -h ./06_norm/sorted_relaxed_norm_${sample}.bam "KU501215_1:4007-4030" > ./06_norm/BCregion_sorted_relaxed_norm_${sample}.bam
 
 
 
@@ -51,29 +57,23 @@ done
 exit 1
 
 
-## sort and index alignment
-samtools sort ./relaxed_norm_${sample}_rep1.bam > sorted_relaxed_norm_${sample}_rep1.bam
-samtools index ./sorted_relaxed_norm_${sample}_rep1.bam
-
-## extract aligned reads overlapping the barcode region
-samtools view -h ./sorted_relaxed_norm_${sample}_rep1.bam "KU501215_1:4007-4030" > BCregion_sorted_relaxed_norm_${sample}_rep1.bam
 
 ## convert aligned reads to fastq
-bamToFastq -i ./BCregion_sorted_relaxed_norm_${sample}_rep1.bam -fq BCregion_sorted_relaxed_${sample}_rep1.fastq
+bamToFastq -i ./BCregion_sorted_relaxed_norm_${sample}.bam -fq BCregion_sorted_relaxed_${sample}.fastq
 
 ## convert fastq to fasta
-seqtk seq -a ./BCregion_sorted_relaxed_${sample}_rep1.fastq > BCregion_sorted_relaxed_${sample}_rep1.fasta
+seqtk seq -a ./BCregion_sorted_relaxed_${sample}.fastq > BCregion_sorted_relaxed_${sample}.fasta
 
 ## extract just the barcode sequence from all the reads
-sed -n '/^>/p; /CT.GC.GC.CT.AC.CC.CT.GC./p' ./BCregion_sorted_relaxed_${sample}_rep1.fasta > sed_BCregion_sorted_relaxed_${sample}_rep1.fasta
-sed -e '$!N;/^>.*\n>/D' -e 'P;D' ./sed_BCregion_sorted_relaxed_${sample}_rep1.fasta > sedfilter_BCregion_sorted_relaxed_${sample}_rep1.fasta
-sed 's/^.*\(CT.GC.GC.CT.AC.CC.CT.GC.\).*$/\1/' ./sedfilter_BCregion_sorted_relaxed_${sample}_rep1.fasta > BConly_${sample}_rep1.fasta
+sed -n '/^>/p; /CT.GC.GC.CT.AC.CC.CT.GC./p' ./BCregion_sorted_relaxed_${sample}.fasta > sed_BCregion_sorted_relaxed_${sample}.fasta
+sed -e '$!N;/^>.*\n>/D' -e 'P;D' ./sed_BCregion_sorted_relaxed_${sample}.fasta > sedfilter_BCregion_sorted_relaxed_${sample}.fasta
+sed 's/^.*\(CT.GC.GC.CT.AC.CC.CT.GC.\).*$/\1/' ./sedfilter_BCregion_sorted_relaxed_${sample}.fasta > BConly_${sample}.fasta
 
 ## Count kmers
-PATH/TO/kmercountexact.sh in=./BConly_${sample}_rep1.fasta out=kmer_counts_${sample}_rep1.fasta k=24 khist=kmer_freq_hist_${sample}_rep1.tsv fastadump=t rcomp=f ow=t
+PATH/TO/kmercountexact.sh in=./BConly_${sample}.fasta out=kmer_counts_${sample}.fasta k=24 khist=kmer_freq_hist_${sample}.tsv fastadump=t rcomp=f ow=t
 
 ## Generate tsv for barcode counts
-seqkit fx2tab ./kmer_counts_${sample}_rep1.fasta -H > counts_BConly_${sample}_rep1.tsv
+seqkit fx2tab ./kmer_counts_${sample}.fasta -H > counts_BConly_${sample}.tsv
 
 ## Clean up
 mkdir ./barcode_analyses
