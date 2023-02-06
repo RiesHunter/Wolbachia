@@ -41,17 +41,16 @@ n=$(( n + 1 ))
 echo "[$n/$x]: ${sample}"
 
 ## Align processed paired-end reads to reference with default settings
-#bwa mem -t 4 $reference ./06_norm/06-norm_${sample}_L001_r1.fastq \
-#  ./06_norm/06-norm_${sample}_L001_r2.fastq > ./06_norm/relaxed_norm_${sample}.bam  2>>_stderr.txt
+bwa mem -t 4 $reference ./06_norm/06-norm_${sample}_L001_r1.fastq \
+  ./06_norm/06-norm_${sample}_L001_r2.fastq > ./06_norm/relaxed_norm_${sample}.bam  2>>_stderr.txt
 
 ## sort and index alignment
-#samtools sort ./06_norm/relaxed_norm_${sample}.bam > ./06_norm/sorted_relaxed_norm_${sample}.bam
-#samtools index ./06_norm/sorted_relaxed_norm_${sample}.bam
+samtools sort ./06_norm/relaxed_norm_${sample}.bam > ./06_norm/sorted_relaxed_norm_${sample}.bam 2>>_stderr.txt
+samtools index ./06_norm/sorted_relaxed_norm_${sample}.bam #2>>_stderr.txt
 
 ## extract aligned reads overlapping the barcode region
-samtools view -h ./06_norm/sorted_relaxed_norm_${sample}.bam "KU501215_1:4007-4030" > ./06_norm/BCregion_sorted_relaxed_norm_${sample}.bam
-
-
+samtools view -h ./06_norm/sorted_relaxed_norm_${sample}.bam "KU501215.1:4007-4030" > ./06_norm/BCregion_sorted_relaxed_norm_${sample}.bam 2>>_stderr.txt
+ # for some reason, I had to change "KU501215_1:4007-4030" to "KU501215.1:4007-4030" 
 
 done
 exit 1
