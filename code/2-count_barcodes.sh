@@ -8,22 +8,46 @@ echo ""; echo "-------------------- Starting barcode analyses... ---------------
 ## Parameters
 workingdir="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run"
 reference="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/refseqs/PRVABC59.fasta"
+
+## Index
+bwa index ${reference} 2>>_stderr.txt
+samtools faidx ${reference} 2>>_stderr.txt
+
+## Working directory
 cd $workingdir
 pwd
+ls
 
+### ---------------------------------------------------------------------------------------------------- ###
+## Calculate number of pairs
+declare -i x=0
+for pairs in 06_norm/*_r1.fastq
+do
+x=$(( x + 1 ))
+done
+declare -i n=0
+
+### ---------------------------------------------------------------------------------------------------- ###
+## _stderr.txt
+touch _stderr.txt
+## For-loop
+for pairs in 06_norm/*_r1.fastq
+do
+
+# Names
+sample=${pairs%%_r1fastq.gz}
+n=$(( n + 1 ))
+echo "[$n/$x]: ${sample}"
+
+## Align
+#bwa mem -t 4 PATH/TO/REFERENCE.fasta ./normalized_fastq_bam/norm_${sample}_1_r1.fastq ./normalized_fastq_bam/norm_${sample}_1_r2.fastq > relaxed_norm_${sample}_rep1.bam
+
+
+
+done
 exit 1
 
-
-
-## Set the sample name variable
-echo "What is the name of the sample?"
-read sample
-
-## Change directory to the output directory for rep 1
-cd PATH/TO/${sample}_rep1_v3.1
-
 ## Align processed paired-end reads to reference with default settings
-bwa mem -t 4 PATH/TO/REFERENCE.fasta ./normalized_fastq_bam/norm_${sample}_1_r1.fastq ./normalized_fastq_bam/norm_${sample}_1_r2.fastq > relaxed_norm_${sample}_rep1.bam
 
 ## sort and index alignment
 samtools sort ./relaxed_norm_${sample}_rep1.bam > sorted_relaxed_norm_${sample}_rep1.bam
