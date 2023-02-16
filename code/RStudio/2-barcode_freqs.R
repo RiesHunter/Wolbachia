@@ -292,3 +292,84 @@ df_pairwise_euc_filtered %>%
 
 #### Barcodes_overtime_COMPOSITE.R ####
 # R script to plot composite barcode trajectories for each passage series.
+df_tet_umi_totals <- df_umi_totals[grepl("tet",df_umi_totals$sample_name),]
+df_tet_umi_totals <- separate(df_tet_umi_totals, "sample_name", c("sample_name","S"), sep="_S")
+df_tet_umi_totals <- separate(df_tet_umi_totals, "sample_name", c("sample_name","location"), sep="-tet-")
+df_tet_umi_totals_dups <- df_tet_umi_totals[grepl("dup",df_tet_umi_totals$sample_name),]
+df_tet_umi_totals_dups <- separate(df_tet_umi_totals_dups, "sample_name", c("1","2","dup","3","4"), sep="-")
+df_tet_umi_totals <- df_tet_umi_totals[!grepl("dup",df_tet_umi_totals$sample_name),]
+df_tet_umi_totals <- separate(df_tet_umi_totals, "sample_name", c("1","2","3", "4"), sep="-")
+df_tet_umi_totals$dup <- "not_dup"
+df_tet_umi_totals <- rbind(df_tet_umi_totals, df_tet_umi_totals_dups)
+df_tet_umi_totals$group <- "tet"
+head(df_tet_umi_totals)
+
+
+df_wmel_umi_totals <- df_umi_totals[grepl("wmel",df_umi_totals$sample_name),]
+df_wmel_umi_totals <- separate(df_wmel_umi_totals, "sample_name", c("sample_name","S"), sep="_S")
+df_wmel_umi_totals <- separate(df_wmel_umi_totals, "sample_name", c("sample_name","location"), sep="-wmel-")
+df_wmel_umi_totals_dups <- df_wmel_umi_totals[grepl("dup",df_wmel_umi_totals$sample_name),]
+df_wmel_umi_totals_dups <- separate(df_wmel_umi_totals_dups, "sample_name", c("1","2","dup","3","4"), sep="-")
+df_wmel_umi_totals <- df_wmel_umi_totals[!grepl("dup",df_wmel_umi_totals$sample_name),]
+df_wmel_umi_totals <- separate(df_wmel_umi_totals, "sample_name", c("1","2","3", "4"), sep="-")
+df_wmel_umi_totals$dup <- "not_dup"
+df_wmel_umi_totals <- rbind(df_wmel_umi_totals, df_tet_umi_totals_dups)
+df_wmel_umi_totals$group <- "wmel"
+head(df_wmel_umi_totals)
+
+df_treatment_umi_totals <- rbind(df_tet_umi_totals, df_wmel_umi_totals)
+df_treatment_umi_totals$ID <- paste(df_treatment_umi_totals$`1`,df_treatment_umi_totals$`2`, sep = "_")
+df_treatment_umi_totals$dpi <- as.integer(df_treatment_umi_totals$`3`)
+df_treatment_umi_totals$rep <- df_treatment_umi_totals$`4`
+df_treatment_umi_totals$group_location <- paste(df_treatment_umi_totals$group, 
+                                                df_treatment_umi_totals$location, sep = "_")
+df_treatment_umi_totals$group_location_dpi <- paste(df_treatment_umi_totals$group, 
+                                                    df_treatment_umi_totals$location, 
+                                                    df_treatment_umi_totals$dpi, 
+                                                    sep = "_")
+df_treatment_umi_totals$`1` <- NULL
+df_treatment_umi_totals$`2` <- NULL
+df_treatment_umi_totals$`3` <- NULL
+df_treatment_umi_totals$`4` <- NULL
+df_treatment_umi_totals$S <- NULL
+head(df_treatment_umi_totals)
+df_treatment_umi_totals$group_location_dpi <- as.factor(df_treatment_umi_totals$group_location_dpi)
+df_treatment_umi_totals$group_location <- as.factor(df_treatment_umi_totals$group_location)
+
+
+ds_treatment_umi_totals <- as.data.frame(ds(df_treatment_umi_totals, 
+                                            varname = "sample_total", 
+                                            groupnames = c("group_location_dpi")))
+ds_treatment_umi_totals <- separate(ds_treatment_umi_totals, "group_location_dpi", 
+                                    into = c("group", "location", "dpi"), sep = "_")
+ds_treatment_umi_totals$group_location <- paste(ds_treatment_umi_totals$group, 
+                                                ds_treatment_umi_totals$location, sep = "_")
+ds_treatment_umi_totals$group_location_dpi <- paste(ds_treatment_umi_totals$group, 
+                                                    ds_treatment_umi_totals$location, 
+                                                    ds_treatment_umi_totals$dpi, 
+                                                    sep = "_")
+ds_treatment_umi_totals$group_location_dpi <- as.factor(ds_treatment_umi_totals$group_location_dpi)
+ds_treatment_umi_totals$group_location <- as.factor(ds_treatment_umi_totals$group_location)
+ds_treatment_umi_totals$dpi <- factor(ds_treatment_umi_totals$dpi, 
+                                      levels = c("4", "7", "14"))
+
+
+## sample total by group_location; group = dpi
+ggplot(ds_treatment_umi_totals, aes(color = dpi), group = dpi) + 
+  geom_point(aes(x = group_location, y = sample_total),
+             position = position_dodge(.75)) + 
+  geom_errorbar(aes(x = group_location, y = sample_total, 
+                    ymin = sample_total - sd, 
+                    ymax = sample_total + sd), 
+                width = .15, position = position_dodge(.75)) +
+  theme_bw()
+
+## sample total by dpi; group = group_location
+ggplot(ds_treatment_umi_totals, aes(color = group_location), group = group_location) + 
+  geom_point(aes(x = dpi, y = sample_total),
+             position = position_dodge(.75)) + 
+  geom_errorbar(aes(x = dpi, y = sample_total, 
+                    ymin = sample_total - sd, 
+                    ymax = sample_total + sd), 
+                width = .15, position = position_dodge(.75)) +
+  theme_bw()

@@ -445,69 +445,92 @@ plot_mse <- ggplot(ds_df_R_cadm) +
   axis_formatting + legend_formatting + background_formatting
 
 ## df_12_snpgenie_sg_pr
-ds_12_snpgenie_sg_pr_Pi <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "pi", groupnames = c("group_type")))
-ds_12_snpgenie_sg_pr_PiN <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piN", groupnames = c("group_type")))
-ds_12_snpgenie_sg_pr_PiS <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piS", groupnames = c("group_type")))
-ds_12_snpgenie_sg_pr_PiNPiS <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piNpiS", groupnames = c("group_type")))
-ds_12_snpgenie_sg_pr_PiNminusPiS <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piNminuspiS", groupnames = c("group_type")))
+df_12_snpgenie_sg_pr$ID <- paste(df_12_snpgenie_sg_pr$group_type, df_12_snpgenie_sg_pr$dpi)
+ds_12_snpgenie_sg_pr_Pi <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "pi", groupnames = c("ID")))
+ds_12_snpgenie_sg_pr_PiN <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piN", groupnames = c("ID")))
+ds_12_snpgenie_sg_pr_PiS <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piS", groupnames = c("ID")))
+ds_12_snpgenie_sg_pr_PiNPiS <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piNpiS", groupnames = c("ID")))
+ds_12_snpgenie_sg_pr_PiNminusPiS <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piNminuspiS", groupnames = c("ID")))
+df_12_snpgenie_sg_pr$ID <- factor(as.factor(df_12_snpgenie_sg_pr$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
+ds_12_snpgenie_sg_pr_Pi$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_Pi$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
+ds_12_snpgenie_sg_pr_PiN$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_PiN$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
+ds_12_snpgenie_sg_pr_PiS$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_PiS$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
+ds_12_snpgenie_sg_pr_PiNPiS$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_PiNPiS$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
+ds_12_snpgenie_sg_pr_PiNminusPiS$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_PiNminusPiS$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
+
+df_12_snpgenie_sg_pr$group_location <- df_12_snpgenie_sg_pr$ID
+ds_12_snpgenie_sg_pr_Pi$group_location <- ds_12_snpgenie_sg_pr_Pi$ID
+ds_12_snpgenie_sg_pr_PiN$group_location <- ds_12_snpgenie_sg_pr_PiN$ID
+ds_12_snpgenie_sg_pr_PiS$group_location <- ds_12_snpgenie_sg_pr_PiS$ID
+ds_12_snpgenie_sg_pr_PiNPiS$group_location <- ds_12_snpgenie_sg_pr_PiNPiS$ID
+ds_12_snpgenie_sg_pr_PiNminusPiS$group_location <- ds_12_snpgenie_sg_pr_PiNminusPiS$ID
+
+df_12_snpgenie_sg_pr <- separate(df_12_snpgenie_sg_pr, col="group_location", into = c("location", "dpi"), sep = " ")
+ds_12_snpgenie_sg_pr_Pi <- separate(ds_12_snpgenie_sg_pr_Pi, col="group_location", into = c("location", "dpi"), sep = " ")
+ds_12_snpgenie_sg_pr_PiN <- separate(ds_12_snpgenie_sg_pr_PiN, col="group_location", into = c("location", "dpi"), sep = " ")
+ds_12_snpgenie_sg_pr_PiS <- separate(ds_12_snpgenie_sg_pr_PiS, col="group_location", into = c("location", "dpi"), sep = " ")
+ds_12_snpgenie_sg_pr_PiNPiS <- separate(ds_12_snpgenie_sg_pr_PiNPiS, col="group_location", into = c("location", "dpi"), sep = " ")
+ds_12_snpgenie_sg_pr_PiNminusPiS <- separate(ds_12_snpgenie_sg_pr_PiNminusPiS, col="group_location", into = c("location", "dpi"), sep = " ")
+
+
+
 
 ## plot function
 new.function <- function (dataframe, x1, y1, 
                           datasummary, x2, y2,
                           x_lab, y_lab, title_lab) {
   ggplot() +
-    geom_point(data = dataframe, aes(x = x1, y = y1), color = "black", alpha = .2) + 
+    geom_point(data = dataframe, aes(x = x1, y = y1), color = ID, group = , alpha = .2) + 
     geom_point(data = datasummary, aes(x = x2, y = y2)) + 
     geom_errorbar(data = datasummary, aes(x = x2, y = y2, ymin = y2 - sd, ymax = y2 + sd), 
                   width = .2, position = position_dodge(.9)) + 
-    geom_signif(data = dataframe, aes(x = x1, y = y1),
-                comparisons = list(c("tet_body", "wmel_body")), 
-                map_signif_level = F,
-                textsize = 3,
-                tip_length = 0,
-                vjust = 0,
-                margin_top = 0.1,
-                test="t.test") + 
-    geom_signif(data = dataframe, aes(x = x1, y = y1),
-                comparisons = list(c("tet_legs", "wmel_legs")), 
-                map_signif_level = F,
-                textsize = 3,
-                tip_length = 0,
-                vjust = 0,
-                margin_top = 0.1,
-                test="t.test") + 
+    #geom_signif(data = dataframe, aes(x = x1, y = y1),
+    #            comparisons = list(c("tet_body", "wmel_body")), 
+    #            map_signif_level = F,
+    #            textsize = 3,
+    #            tip_length = 0,
+    #            vjust = 0,
+    #            margin_top = 0.1,
+    #            test="t.test") + 
+    #geom_signif(data = dataframe, aes(x = x1, y = y1),
+    #            comparisons = list(c("tet_legs", "wmel_legs")), 
+    #            map_signif_level = F,
+    #            textsize = 3,
+    #            tip_length = 0,
+    #            vjust = 0,
+    #            margin_top = 0.1,
+    #            test="t.test") + 
     labs(x = x_lab, y = y_lab, title = title_lab) + 
     theme(legend.title = element_blank(), legend.key = element_blank(), legend.position = "right") + 
     axis_formatting + legend_formatting + background_formatting
 }
 
-plot_1 <- new.function(df_12_snpgenie_sg_pr, df_12_snpgenie_sg_pr$group_type, 
+plot_1 <- new.function(df_12_snpgenie_sg_pr, df_12_snpgenie_sg_pr$ID, 
                        df_12_snpgenie_sg_pr$pi, 
                        ds_12_snpgenie_sg_pr_Pi, 
-                       ds_12_snpgenie_sg_pr_Pi$group_type,
+                       ds_12_snpgenie_sg_pr_Pi$ID,
                        ds_12_snpgenie_sg_pr_Pi$pi,
                        "", "Nucleotide diversity", "")
 
-plot_2 <- new.function(df_12_snpgenie_sg_pr, df_12_snpgenie_sg_pr$group_type, 
+plot_2 <- new.function(df_12_snpgenie_sg_pr, df_12_snpgenie_sg_pr$ID, 
                        df_12_snpgenie_sg_pr$piNminuspiS, 
                        ds_12_snpgenie_sg_pr_PiNminusPiS, 
-                       ds_12_snpgenie_sg_pr_PiNminusPiS$group_type,
+                       ds_12_snpgenie_sg_pr_PiNminusPiS$ID,
                        ds_12_snpgenie_sg_pr_PiNminusPiS$piNminuspiS,
                        "", "PiN - PiS", "")
 
-plot_3 <- new.function(df_12_snpgenie_sg_pr, df_12_snpgenie_sg_pr$group_type, 
+plot_3 <- new.function(df_12_snpgenie_sg_pr, df_12_snpgenie_sg_pr$ID, 
                        df_12_snpgenie_sg_pr$piNpiS, 
                        ds_12_snpgenie_sg_pr_PiNPiS, 
-                       ds_12_snpgenie_sg_pr_PiNPiS$group_type,
+                       ds_12_snpgenie_sg_pr_PiNPiS$ID,
                        ds_12_snpgenie_sg_pr_PiNPiS$piNpiS,
                        "", "PiNPiS", "")
 
-sg_pr_plot <- plot_grid(plot_1, plot_2, plot_3, ncol=2, align="v", axis ="l")
+sg_pr_plot <- plot_grid(plot_1, plot_2, plot_3, ncol=1, align="v", axis ="l")
 
 
 ## diversity
 plot_mut #mutation
 plot_mgs #mean gini simpson
 plot_mse #mean shannon entropy
-
 snpgenie_plot
