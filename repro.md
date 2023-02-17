@@ -9,7 +9,6 @@
  - Compare metrics between Tet and Wmel over time
  - Investigate bottleneck sizes through barcode analyses
 
-# 230201
 ## Objectives:
  - Calculate barcode frequencies
  - Compare Tet to Wmel over time
@@ -33,4 +32,6 @@ Adapted the following files into `2-barcode_freqs.R`:
  - `Mean_bc_frequencies.R`
  - `Euclidean_distance_meanbcfreqs.R`
  - `Barcodes_overtime_COMPOSITE.R`
+ - Got the first and the second working in loops
  - 
+ 
