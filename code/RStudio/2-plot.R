@@ -107,15 +107,16 @@ palette_muts_NS_S <- c("Nonsynonymous" = "#FF7F20",
                        "Synonymous" = "#4F7899")
 
 #### Import and clean ####
-dir_09_consensus_VCF <- paste("/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run/09_consensus_VCF", sep="")
-dir_09_reference_VCF <- paste("/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run/09_reference_VCF", sep="")
-dir_10_snpdat_TSV <- paste("/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run/10_snpdat_TSV", sep="")
-dir_10_snpdat_TXT <- paste("/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run/10_snpdat_TXT", sep="")
-dir_12_snpgenie <- paste("/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run/12_snpgenie", sep="")
-dir_14_R <- paste("/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run/14_R", sep="")
-dir_save <- paste("/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run", sep="")
+dir_09_consensus_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_consensus_VCF", sep="")
+dir_09_reference_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_reference_VCF", sep="")
+dir_10_snpdat_TSV <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/10_snpdat_TSV", sep="")
+dir_10_snpdat_TXT <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/10_snpdat_TXT", sep="")
+dir_12_snpgenie <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/12_snpgenie", sep="")
+dir_14_R <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/14_R", sep="")
+dir_save <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run", sep="")
 
 #### dir_09_consensus_VCF ####
+## these are the vcfs from the samples relative to their own consensus
 setwd(dir_09_consensus_VCF)
 vcf <- dir(pattern="_L001.vcf")
 names_trunc <- gsub("_L001.vcf","",vcf)
@@ -128,10 +129,20 @@ for (i in 1:n) {
   ifelse(length(list[[i]]$CHROM)>0, 
          list[[i]]$FILTER <- names_trunc[i],
          print("No variants!"))
+  ifelse(length(list[[i]]$CHROM)>0, 
+         list[[i]] <- separate(list[[i]], "INFO", c("DP", "AF_1", "SB", "DP4"), sep = ";"),
+         print("No variants!"))
+  ifelse(length(list[[i]]$CHROM)>0, 
+         list[[i]] <- separate(list[[i]], "AF_1", c("Label", "AF"), sep = "="),
+         print("No variants!"))
   names(list) <- names_trunc}
 df_09_consensus_VCF <- Reduce(full_join,list)
+df_09_consensus_VCF <- df_09_consensus_VCF[df_09_consensus_VCF$AF > 0.01,]
+df_09_consensus_VCF$POS <- as.integer(df_09_consensus_VCF$POS)
+df_09_consensus_VCF$AF <- as.numeric(df_09_consensus_VCF$AF)
 
 #### dir_09_reference_VCF ####
+## these are the vcfs from the samples relative to the reference
 setwd(dir_09_reference_VCF)
 vcf <- dir(pattern="_L001.vcf")
 names_trunc <- gsub("_L001.vcf","",vcf)
@@ -144,13 +155,22 @@ for (i in 1:n) {
   ifelse(length(list[[i]]$CHROM)>0, 
          list[[i]]$FILTER <- names_trunc[i],
          print("No variants!"))
+  ifelse(length(list[[i]]$CHROM)>0, 
+         list[[i]] <- separate(list[[i]], "INFO", c("DP", "AF_1", "SB", "DP4"), sep = ";"),
+         print("No variants!"))
+  ifelse(length(list[[i]]$CHROM)>0, 
+         list[[i]] <- separate(list[[i]], "AF_1", c("Label", "AF"), sep = "="),
+         print("No variants!"))
   names(list) <- names_trunc}
 df_09_reference_VCF <- Reduce(full_join,list)
+df_09_reference_VCF <- df_09_reference_VCF[df_09_reference_VCF$AF > 0.01,]
+df_09_reference_VCF$POS <- as.integer(df_09_reference_VCF$POS)
+df_09_reference_VCF$AF <- as.numeric(df_09_reference_VCF$AF)
 
-#### dir_10_snpdat_TSV ####
+#### dir_10_snpdat_TSV #### not_done####
 
 
-#### dir_10_snpdat_TXT ####
+#### dir_10_snpdat_TXT #### not_done####
 
 
 #### dir_12_snpgenie ####
@@ -381,6 +401,7 @@ df_R_cadm$`5` <- NULL
 df_R_cadm$`6` <- NULL
 df_R_cadm <- df_R_cadm[df_R_cadm$`%Covered`>=80,]
 df_R_cadm <- df_R_cadm[df_R_cadm$MeanDepth>=2000,]
+
 #R_msf
 R_msf <- dir(pattern="_L001_mutational_spectrum_frequencies.csv")
 names_trunc <- gsub("_L001_mutational_spectrum_frequencies.csv","",R_msf)
@@ -410,127 +431,558 @@ for (i in 1:n) {
   names(list) <- names_trunc}
 df_R_ms <- Reduce(full_join,list)
 
-#### Plot ####
-ds_df_R_cadm <- as.data.frame(ds(df_R_cadm, 
-                                 varname = "Mut.Freq.per.10K", 
-                                 groupnames = c("group_type")))
-plot_mut <- ggplot(ds_df_R_cadm) + 
-  geom_point(aes(x = group_type, y = `Mut.Freq.per.10K`)) + 
-  geom_errorbar(aes(x = group_type, y = `Mut.Freq.per.10K`, 
-                    ymin = `Mut.Freq.per.10K` - sd, ymax = `Mut.Freq.per.10K` + sd), 
-                width = .2, position = position_dodge(.9)) + 
-  theme(legend.title = element_blank(), legend.key = element_blank(), legend.position = "right") + 
-  axis_formatting + legend_formatting + background_formatting
+#### string matches ####
+## consensus
+df_09_consensus_VCF$FILTER[grepl("7-2-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
+df_09_consensus_VCF$FILTER[grepl("7-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
+df_09_consensus_VCF$FILTER[grepl("14-1-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
+df_09_consensus_VCF$FILTER[grepl("14-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
+df_09_consensus_VCF$FILTER[grepl("7-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_1"
+df_09_consensus_VCF$FILTER[grepl("7-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_2"
+df_09_consensus_VCF$FILTER[grepl("7-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_3"
+df_09_consensus_VCF$FILTER[grepl("14-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_1"
+df_09_consensus_VCF$FILTER[grepl("14-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_2"
+df_09_consensus_VCF$FILTER[grepl("14-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_3"
+df_09_consensus_VCF$FILTER[grepl("4-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_1"
+df_09_consensus_VCF$FILTER[grepl("4-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_2"
+df_09_consensus_VCF$FILTER[grepl("4-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_3"
+df_09_consensus_VCF$FILTER[grepl("7-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_1"
+df_09_consensus_VCF$FILTER[grepl("7-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_2"
+df_09_consensus_VCF$FILTER[grepl("7-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_3"
+df_09_consensus_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
+df_09_consensus_VCF$FILTER[grepl("14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1"
+df_09_consensus_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
+df_09_consensus_VCF$FILTER[grepl("14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2"
+df_09_consensus_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
+df_09_consensus_VCF$FILTER[grepl("14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3"
+df_09_consensus_VCF$FILTER[grepl("7-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_1"
+df_09_consensus_VCF$FILTER[grepl("7-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_2"
+df_09_consensus_VCF$FILTER[grepl("7-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_3"
+df_09_consensus_VCF$FILTER[grepl("14-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_1"
+df_09_consensus_VCF$FILTER[grepl("14-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_2"
+df_09_consensus_VCF$FILTER[grepl("14-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_3"
+df_09_consensus_VCF$FILTER[grepl("7-1-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs-7dpi_1"
+df_09_consensus_VCF$FILTER[grepl("14-2-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs-14dpi_2"
+df_09_consensus_VCF$FILTER[grepl("7-2-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
+df_09_consensus_VCF$FILTER[grepl("7-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
+df_09_consensus_VCF$FILTER[grepl("14-1-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
+df_09_consensus_VCF$FILTER[grepl("14-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
+df_09_consensus_VCF$FILTER[grepl("7-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_1"
+df_09_consensus_VCF$FILTER[grepl("7-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_2"
+df_09_consensus_VCF$FILTER[grepl("7-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_3"
+df_09_consensus_VCF$FILTER[grepl("14-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_1"
+df_09_consensus_VCF$FILTER[grepl("14-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_2"
+df_09_consensus_VCF$FILTER[grepl("14-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_3"
+df_09_consensus_VCF$FILTER[grepl("4-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_1"
+df_09_consensus_VCF$FILTER[grepl("4-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_2"
+df_09_consensus_VCF$FILTER[grepl("4-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_3"
+df_09_consensus_VCF$FILTER[grepl("7-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_1"
+df_09_consensus_VCF$FILTER[grepl("7-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_2"
+df_09_consensus_VCF$FILTER[grepl("7-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_3"
+df_09_consensus_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
+df_09_consensus_VCF$FILTER[grepl("14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1"
+df_09_consensus_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
+df_09_consensus_VCF$FILTER[grepl("14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2"
+df_09_consensus_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
+df_09_consensus_VCF$FILTER[grepl("14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3"
+df_09_consensus_VCF$FILTER[grepl("7-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_1"
+df_09_consensus_VCF$FILTER[grepl("7-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_2"
+df_09_consensus_VCF$FILTER[grepl("7-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_3"
+df_09_consensus_VCF$FILTER[grepl("14-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_1"
+df_09_consensus_VCF$FILTER[grepl("14-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_2"
+df_09_consensus_VCF$FILTER[grepl("14-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_3"
+df_09_consensus_VCF$FILTER[grepl("7-1-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs_7dpi_1"
+df_09_consensus_VCF$FILTER[grepl("14-2-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs_14dpi_2"
+df_09_consensus_VCF_PC <- df_09_consensus_VCF[grepl("PC",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF_ZIKV <- df_09_consensus_VCF[grepl("ZIKV",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF <- df_09_consensus_VCF[!grepl("PC",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF <- df_09_consensus_VCF[!grepl("ZIKV",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF <- separate(df_09_consensus_VCF, "FILTER", c("1","2","3"), sep="-")
+df_09_consensus_VCF <- separate(df_09_consensus_VCF, "3", c("3","4"), sep="_")
+df_09_consensus_VCF$`3` <- as.integer(gsub("dpi", "", df_09_consensus_VCF$`3`))
 
-ds_df_R_cadm <- as.data.frame(ds(df_R_cadm, 
-                                 varname = "Mean.Gini.Simpson", 
-                                 groupnames = c("group_type")))
-plot_mgs <- ggplot(ds_df_R_cadm) + 
-  geom_point(aes(x = group_type, y = `Mean.Gini.Simpson`)) + 
-  geom_errorbar(aes(x = group_type, y = `Mean.Gini.Simpson`, 
-                    ymin = `Mean.Gini.Simpson` - sd, ymax = `Mean.Gini.Simpson` + sd), 
-                width = .2, position = position_dodge(.9)) + 
-  theme(legend.title = element_blank(), legend.key = element_blank(), legend.position = "right") + 
-  axis_formatting + legend_formatting + background_formatting
+## reference
+df_09_reference_VCF$FILTER[grepl("7-2-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
+df_09_reference_VCF$FILTER[grepl("7-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
+df_09_reference_VCF$FILTER[grepl("14-1-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
+df_09_reference_VCF$FILTER[grepl("14-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
+df_09_reference_VCF$FILTER[grepl("7-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_1"
+df_09_reference_VCF$FILTER[grepl("7-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_2"
+df_09_reference_VCF$FILTER[grepl("7-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_3"
+df_09_reference_VCF$FILTER[grepl("14-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_1"
+df_09_reference_VCF$FILTER[grepl("14-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_2"
+df_09_reference_VCF$FILTER[grepl("14-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_3"
+df_09_reference_VCF$FILTER[grepl("4-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_1"
+df_09_reference_VCF$FILTER[grepl("4-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_2"
+df_09_reference_VCF$FILTER[grepl("4-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_3"
+df_09_reference_VCF$FILTER[grepl("7-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_1"
+df_09_reference_VCF$FILTER[grepl("7-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_2"
+df_09_reference_VCF$FILTER[grepl("7-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_3"
+df_09_reference_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
+df_09_reference_VCF$FILTER[grepl("14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1"
+df_09_reference_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
+df_09_reference_VCF$FILTER[grepl("14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2"
+df_09_reference_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
+df_09_reference_VCF$FILTER[grepl("14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3"
+df_09_reference_VCF$FILTER[grepl("7-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_1"
+df_09_reference_VCF$FILTER[grepl("7-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_2"
+df_09_reference_VCF$FILTER[grepl("7-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_3"
+df_09_reference_VCF$FILTER[grepl("14-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_1"
+df_09_reference_VCF$FILTER[grepl("14-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_2"
+df_09_reference_VCF$FILTER[grepl("14-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_3"
+df_09_reference_VCF$FILTER[grepl("7-1-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs-7dpi_1"
+df_09_reference_VCF$FILTER[grepl("14-2-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs-14dpi_2"
+df_09_reference_VCF$FILTER[grepl("7-2-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
+df_09_reference_VCF$FILTER[grepl("7-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
+df_09_reference_VCF$FILTER[grepl("14-1-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
+df_09_reference_VCF$FILTER[grepl("14-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
+df_09_reference_VCF$FILTER[grepl("7-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_1"
+df_09_reference_VCF$FILTER[grepl("7-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_2"
+df_09_reference_VCF$FILTER[grepl("7-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_3"
+df_09_reference_VCF$FILTER[grepl("14-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_1"
+df_09_reference_VCF$FILTER[grepl("14-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_2"
+df_09_reference_VCF$FILTER[grepl("14-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_3"
+df_09_reference_VCF$FILTER[grepl("4-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_1"
+df_09_reference_VCF$FILTER[grepl("4-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_2"
+df_09_reference_VCF$FILTER[grepl("4-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_3"
+df_09_reference_VCF$FILTER[grepl("7-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_1"
+df_09_reference_VCF$FILTER[grepl("7-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_2"
+df_09_reference_VCF$FILTER[grepl("7-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_3"
+df_09_reference_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
+df_09_reference_VCF$FILTER[grepl("14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1"
+df_09_reference_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
+df_09_reference_VCF$FILTER[grepl("14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2"
+df_09_reference_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
+df_09_reference_VCF$FILTER[grepl("14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3"
+df_09_reference_VCF$FILTER[grepl("7-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_1"
+df_09_reference_VCF$FILTER[grepl("7-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_2"
+df_09_reference_VCF$FILTER[grepl("7-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_3"
+df_09_reference_VCF$FILTER[grepl("14-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_1"
+df_09_reference_VCF$FILTER[grepl("14-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_2"
+df_09_reference_VCF$FILTER[grepl("14-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_3"
+df_09_reference_VCF$FILTER[grepl("7-1-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs_7dpi_1"
+df_09_reference_VCF$FILTER[grepl("14-2-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs_14dpi_2"
+df_09_reference_VCF_PC <- df_09_reference_VCF[grepl("PC",df_09_reference_VCF$FILTER),]
+df_09_reference_VCF_ZIKV <- df_09_reference_VCF[grepl("ZIKV",df_09_reference_VCF$FILTER),]
+df_09_reference_VCF <- df_09_reference_VCF[!grepl("PC",df_09_reference_VCF$FILTER),]
+df_09_reference_VCF <- df_09_reference_VCF[!grepl("ZIKV",df_09_reference_VCF$FILTER),]
+df_09_reference_VCF <- separate(df_09_reference_VCF, "FILTER", c("1","2","3"), sep="-")
+df_09_reference_VCF <- separate(df_09_reference_VCF, "3", c("3","4"), sep="_")
+df_09_reference_VCF$`3` <- as.integer(gsub("dpi", "", df_09_reference_VCF$`3`))
 
-ds_df_R_cadm <- as.data.frame(ds(df_R_cadm, 
-                                 varname = "Mean.Shannon.Entropy", 
-                                 groupnames = c("group_type")))
-plot_mse <- ggplot(ds_df_R_cadm) + 
-  geom_point(aes(x = group_type, y = `Mean.Shannon.Entropy`)) + 
-  geom_errorbar(aes(x = group_type, y = `Mean.Shannon.Entropy`, 
-                    ymin = `Mean.Shannon.Entropy` - sd, ymax = `Mean.Shannon.Entropy` + sd), 
-                width = .2, position = position_dodge(.9)) + 
-  theme(legend.title = element_blank(), legend.key = element_blank(), legend.position = "right") + 
-  axis_formatting + legend_formatting + background_formatting
+## groups
+df_09_consensus_VCF$group_location <- paste(df_09_consensus_VCF$`1`, 
+                                            df_09_consensus_VCF$`2`, sep = "_")
+df_09_consensus_VCF$group_location_dpi <- paste(df_09_consensus_VCF$`1`, 
+                                                df_09_consensus_VCF$`2`, 
+                                                df_09_consensus_VCF$`3`, 
+                                                sep = "_")
+df_09_reference_VCF$group_location <- paste(df_09_reference_VCF$`1`, 
+                                            df_09_reference_VCF$`2`, sep = "_")
+df_09_reference_VCF$group_location_dpi <- paste(df_09_reference_VCF$`1`, 
+                                                df_09_reference_VCF$`2`, 
+                                                df_09_reference_VCF$`3`, 
+                                                sep = "_")
+df_09_consensus_VCF$group_location <- as.factor(df_09_consensus_VCF$group_location)
+df_09_consensus_VCF$group_location_dpi <- as.factor(df_09_consensus_VCF$group_location_dpi)
+df_09_reference_VCF$group_location <- as.factor(df_09_reference_VCF$group_location)
+df_09_reference_VCF$group_location_dpi <- as.factor(df_09_reference_VCF$group_location_dpi)
 
-## df_12_snpgenie_sg_pr
-df_12_snpgenie_sg_pr$ID <- paste(df_12_snpgenie_sg_pr$group_type, df_12_snpgenie_sg_pr$dpi)
-ds_12_snpgenie_sg_pr_Pi <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "pi", groupnames = c("ID")))
-ds_12_snpgenie_sg_pr_PiN <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piN", groupnames = c("ID")))
-ds_12_snpgenie_sg_pr_PiS <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piS", groupnames = c("ID")))
-ds_12_snpgenie_sg_pr_PiNPiS <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piNpiS", groupnames = c("ID")))
-ds_12_snpgenie_sg_pr_PiNminusPiS <- as.data.frame(ds(df_12_snpgenie_sg_pr, varname = "piNminuspiS", groupnames = c("ID")))
-df_12_snpgenie_sg_pr$ID <- factor(as.factor(df_12_snpgenie_sg_pr$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
-ds_12_snpgenie_sg_pr_Pi$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_Pi$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
-ds_12_snpgenie_sg_pr_PiN$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_PiN$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
-ds_12_snpgenie_sg_pr_PiS$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_PiS$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
-ds_12_snpgenie_sg_pr_PiNPiS$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_PiNPiS$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
-ds_12_snpgenie_sg_pr_PiNminusPiS$ID <- factor(as.factor(ds_12_snpgenie_sg_pr_PiNminusPiS$ID),levels = c("tet_body 4", "tet_body 7", "tet_body 14", "tet_legs 7", "tet_legs 14", "tet_saliva 7", "tet_saliva 14", "wmel_body 7", "wmel_body 14", "wmel_legs 7", "wmel_legs 14"))
+## snnpgenie
+df_12_snpgenie_sg_pr$file[grepl("7-2-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-7dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("7-3-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-7dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("14-1-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-14dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("14-3-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-14dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("7-1-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-7dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("7-2-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-7dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("7-3-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-7dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("14-1-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-14dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("14-2-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-14dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("14-3-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-14dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("4-1-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-4dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("4-2-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-4dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("4-3-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-4dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("7-1-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-7dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("7-2-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-7dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("7-3-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-7dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("dup-14-1-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_1_dup"
+df_12_snpgenie_sg_pr$file[grepl("14-1-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("dup-14-2-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_2_dup"
+df_12_snpgenie_sg_pr$file[grepl("14-2-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("dup-14-3-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_3_dup"
+df_12_snpgenie_sg_pr$file[grepl("14-3-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("7-1-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-7dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("7-2-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-7dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("7-3-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-7dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("14-1-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-14dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("14-2-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-14dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("14-3-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-14dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("7-1-wmel-legs",df_12_snpgenie_sg_pr$file)] <- "wmel-legs-7dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("14-2-wmel-legs",df_12_snpgenie_sg_pr$file)] <- "wmel-legs-14dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("7-2-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-7dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("7-3-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-7dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("14-1-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-14dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("14-3-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-14dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("7-1-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-7dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("7-2-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-7dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("7-3-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-7dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("14-1-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-14dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("14-2-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-14dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("14-3-tet-legs",df_12_snpgenie_sg_pr$file)] <- "Tet-legs-14dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("4-1-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-4dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("4-2-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-4dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("4-3-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-4dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("7-1-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-7dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("7-2-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-7dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("7-3-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-7dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("dup-14-1-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_1_dup"
+df_12_snpgenie_sg_pr$file[grepl("14-1-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("dup-14-2-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_2_dup"
+df_12_snpgenie_sg_pr$file[grepl("14-2-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("dup-14-3-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_3_dup"
+df_12_snpgenie_sg_pr$file[grepl("14-3-tet-body",df_12_snpgenie_sg_pr$file)] <- "Tet-body-14dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("7-1-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-7dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("7-2-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-7dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("7-3-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-7dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("14-1-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-14dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("14-2-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-14dpi_2"
+df_12_snpgenie_sg_pr$file[grepl("14-3-wmel-body",df_12_snpgenie_sg_pr$file)] <- "wmel-body-14dpi_3"
+df_12_snpgenie_sg_pr$file[grepl("7-1-wmel-legs",df_12_snpgenie_sg_pr$file)] <- "wmel-legs_7dpi_1"
+df_12_snpgenie_sg_pr$file[grepl("14-2-wmel-legs",df_12_snpgenie_sg_pr$file)] <- "wmel-legs_14dpi_2"
+df_12_snpgenie_sg_pr <- separate(df_12_snpgenie_sg_pr, "file", c("1","2","3"), sep="-")
+df_12_snpgenie_sg_pr <- separate(df_12_snpgenie_sg_pr, "3", c("3","4"), sep="_")
+df_12_snpgenie_sg_pr$`3` <- as.integer(gsub("dpi", "", df_12_snpgenie_sg_pr$`3`))
 
-df_12_snpgenie_sg_pr$group_location <- df_12_snpgenie_sg_pr$ID
-ds_12_snpgenie_sg_pr_Pi$group_location <- ds_12_snpgenie_sg_pr_Pi$ID
-ds_12_snpgenie_sg_pr_PiN$group_location <- ds_12_snpgenie_sg_pr_PiN$ID
-ds_12_snpgenie_sg_pr_PiS$group_location <- ds_12_snpgenie_sg_pr_PiS$ID
-ds_12_snpgenie_sg_pr_PiNPiS$group_location <- ds_12_snpgenie_sg_pr_PiNPiS$ID
-ds_12_snpgenie_sg_pr_PiNminusPiS$group_location <- ds_12_snpgenie_sg_pr_PiNminusPiS$ID
+df_12_snpgenie_sg_pr$group_location <- paste(df_12_snpgenie_sg_pr$`1`, 
+                                             df_12_snpgenie_sg_pr$`2`, sep = "_")
+df_12_snpgenie_sg_pr$group_location_dpi <- paste(df_12_snpgenie_sg_pr$`1`, 
+                                                 df_12_snpgenie_sg_pr$`2`, 
+                                                df_12_snpgenie_sg_pr$`3`, 
+                                                sep = "_")
+df_12_snpgenie_sg_pr$group_location <- as.factor(df_12_snpgenie_sg_pr$group_location)
+df_12_snpgenie_sg_pr$group_location_dpi <- as.factor(df_12_snpgenie_sg_pr$group_location_dpi)
 
-df_12_snpgenie_sg_pr <- separate(df_12_snpgenie_sg_pr, col="group_location", into = c("location", "dpi"), sep = " ")
-ds_12_snpgenie_sg_pr_Pi <- separate(ds_12_snpgenie_sg_pr_Pi, col="group_location", into = c("location", "dpi"), sep = " ")
-ds_12_snpgenie_sg_pr_PiN <- separate(ds_12_snpgenie_sg_pr_PiN, col="group_location", into = c("location", "dpi"), sep = " ")
-ds_12_snpgenie_sg_pr_PiS <- separate(ds_12_snpgenie_sg_pr_PiS, col="group_location", into = c("location", "dpi"), sep = " ")
-ds_12_snpgenie_sg_pr_PiNPiS <- separate(ds_12_snpgenie_sg_pr_PiNPiS, col="group_location", into = c("location", "dpi"), sep = " ")
-ds_12_snpgenie_sg_pr_PiNminusPiS <- separate(ds_12_snpgenie_sg_pr_PiNminusPiS, col="group_location", into = c("location", "dpi"), sep = " ")
-
-
-
-
-## plot function
-new.function <- function (dataframe, x1, y1, 
-                          datasummary, x2, y2,
-                          x_lab, y_lab, title_lab) {
-  ggplot() +
-    geom_point(data = dataframe, aes(x = x1, y = y1), color = ID, group = , alpha = .2) + 
-    geom_point(data = datasummary, aes(x = x2, y = y2)) + 
-    geom_errorbar(data = datasummary, aes(x = x2, y = y2, ymin = y2 - sd, ymax = y2 + sd), 
-                  width = .2, position = position_dodge(.9)) + 
-    #geom_signif(data = dataframe, aes(x = x1, y = y1),
-    #            comparisons = list(c("tet_body", "wmel_body")), 
-    #            map_signif_level = F,
-    #            textsize = 3,
-    #            tip_length = 0,
-    #            vjust = 0,
-    #            margin_top = 0.1,
-    #            test="t.test") + 
-    #geom_signif(data = dataframe, aes(x = x1, y = y1),
-    #            comparisons = list(c("tet_legs", "wmel_legs")), 
-    #            map_signif_level = F,
-    #            textsize = 3,
-    #            tip_length = 0,
-    #            vjust = 0,
-    #            margin_top = 0.1,
-    #            test="t.test") + 
-    labs(x = x_lab, y = y_lab, title = title_lab) + 
-    theme(legend.title = element_blank(), legend.key = element_blank(), legend.position = "right") + 
-    axis_formatting + legend_formatting + background_formatting
+if(!require(bayesboot)){
+  install.packages("bayesboot")
+  library(bayesboot)
 }
+b <- function(data){
+  return(bayesboot(data, mean, R = 10000))
+}
+molten_sg_pr_pi <- melt(df_12_snpgenie_sg_pr,
+                        id.vars = c("group_location_dpi"),
+                        measure.vars = c("pi"),
+                        variable.name = "Pi")
+molten_sg_pr_piNpiS <- melt(df_12_snpgenie_sg_pr,
+                            id.vars = c("group_location_dpi"),
+                            measure.vars = c("piNpiS"),
+                            variable.name = "Pi")
+molten_sg_pr_piN <- melt(df_12_snpgenie_sg_pr,
+                         id.vars = c("group_location_dpi"),
+                         measure.vars = c("piN"),
+                         variable.name = "Pi")
+molten_sg_pr_piS <- melt(df_12_snpgenie_sg_pr,
+                         id.vars = c("group_location_dpi"),
+                         measure.vars = c("piS"),
+                         variable.name = "Pi")
+molten_sg_pr <- rbind(molten_sg_pr_pi, molten_sg_pr_piNpiS, molten_sg_pr_piN, molten_sg_pr_piS)
+molten_sg_pr <- molten_sg_pr[!is.na(molten_sg_pr$value),]
 
-plot_1 <- new.function(df_12_snpgenie_sg_pr, df_12_snpgenie_sg_pr$ID, 
-                       df_12_snpgenie_sg_pr$pi, 
-                       ds_12_snpgenie_sg_pr_Pi, 
-                       ds_12_snpgenie_sg_pr_Pi$ID,
-                       ds_12_snpgenie_sg_pr_Pi$pi,
-                       "", "Nucleotide diversity", "")
+levels <- levels(molten_sg_pr$group_location_dpi)
 
-plot_2 <- new.function(df_12_snpgenie_sg_pr, df_12_snpgenie_sg_pr$ID, 
-                       df_12_snpgenie_sg_pr$piNminuspiS, 
-                       ds_12_snpgenie_sg_pr_PiNminusPiS, 
-                       ds_12_snpgenie_sg_pr_PiNminusPiS$ID,
-                       ds_12_snpgenie_sg_pr_PiNminusPiS$piNminuspiS,
-                       "", "PiN - PiS", "")
+i=1
+temp <- molten_sg_pr[molten_sg_pr$group_location_dpi==levels[i],]
+temp_pi <- ds(data.frame("b" = b(temp$value[temp$Pi=="pi"]), "g" = "pi"), varname = "V1", groupnames = "g")
+temp_piNpiS <- ds(data.frame("b" = b(temp$value[temp$Pi=="piNpiS"]), "g" = "piNpiS"), varname = "V1", groupnames = "g")
+temp_piN <- ds(data.frame("b" = b(temp$value[temp$Pi=="piN"]), "g" = "piN"), varname = "V1", groupnames = "g")
+temp_piS <- ds(data.frame("b" = b(temp$value[temp$Pi=="piS"]), "g" = "piS"), varname = "V1", groupnames = "g")
+ds_b_sg_pr <- rbind(temp_pi, temp_piNpiS, temp_piN, temp_piS)
+ds_b_sg_pr$gld <- levels[i]
+for (i in 2:length(levels)) {
+  temp <- molten_sg_pr[molten_sg_pr$group_location_dpi==levels[i],]
+  temp_pi <- ds(data.frame("b" = b(temp$value[temp$Pi=="pi"]), "g" = "pi"), varname = "V1", groupnames = "g")
+  temp_piNpiS <- ds(data.frame("b" = b(temp$value[temp$Pi=="piNpiS"]), "g" = "piNpiS"), varname = "V1", groupnames = "g")
+  temp_piN <- ds(data.frame("b" = b(temp$value[temp$Pi=="piN"]), "g" = "piN"), varname = "V1", groupnames = "g")
+  temp_piS <- ds(data.frame("b" = b(temp$value[temp$Pi=="piS"]), "g" = "piS"), varname = "V1", groupnames = "g")
+  temp2 <- rbind(temp_pi, temp_piNpiS, temp_piN, temp_piS)
+  temp2$gld <- levels[i]
+  ds_b_sg_pr <- rbind(ds_b_sg_pr, temp2)
+}
+ds_b_sg_pr <- separate(ds_b_sg_pr, "gld", c("group", "location", "dpi"), sep = "_")
+ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
+                        levels = c("Tet_saliva", "Tet_body", "wmel_body", "Tet_legs", "wmel_legs"))
+ds_b_sg_pr$gld <- as.factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, ds_b_sg_pr$dpi, sep = "_"))
+ds_b_sg_pr$dpi <- factor(ds_b_sg_pr$dpi, levels = c("4", "7", "14"))
+ds_b_sg_pr$g <- factor(ds_b_sg_pr$g, levels = c("pi", "piN", "piS", "piNpiS"))
 
-plot_3 <- new.function(df_12_snpgenie_sg_pr, df_12_snpgenie_sg_pr$ID, 
-                       df_12_snpgenie_sg_pr$piNpiS, 
-                       ds_12_snpgenie_sg_pr_PiNPiS, 
-                       ds_12_snpgenie_sg_pr_PiNPiS$ID,
-                       ds_12_snpgenie_sg_pr_PiNPiS$piNpiS,
-                       "", "PiNPiS", "")
+#### Plot ####
+## Variants across the genome
+plot1 <- ggplot(data = df_09_reference_VCF, aes(x = POS, y = AF, color = `3`)) + 
+  geom_point() + 
+  scale_y_continuous(n.breaks = 3) + 
+  scale_x_continuous(n.breaks = 5) + 
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "none") +
+  facet_grid(rows = vars(group_location), cols = vars(`3`)) + 
+  axis_formatting + legend_formatting + background_formatting
 
-sg_pr_plot <- plot_grid(plot_1, plot_2, plot_3, ncol=1, align="v", axis ="l")
+plot2 <- ggplot(data = df_09_consensus_VCF, aes(x = POS, y = AF, color = `3`)) + 
+  geom_point() + 
+  scale_y_continuous(n.breaks = 2) + 
+  scale_x_continuous(n.breaks = 5) + 
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "none") +
+  facet_grid(rows = vars(group_location), cols = vars(`3`)) + 
+  axis_formatting + legend_formatting + background_formatting
+
+## snpgenie
+#piN and piS
+w <- c(1,1)
+plot3 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piN" | ds_b_sg_pr$g =="piS",], 
+                aes(x = gl, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = gl, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  scale_color_manual(values = c("piN" = "#FF7F20",
+                                "piS" = "#4F7899")) +
+  facet_grid(cols = vars(dpi)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "none") +  
+  axis_formatting + legend_formatting + background_formatting
+
+ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
+                        levels = c("Tet_saliva", "Tet_body", "Tet_legs","wmel_body", "wmel_legs"))
+plot4 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piN" | ds_b_sg_pr$g =="piS",], 
+                aes(x = dpi, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = dpi, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  scale_color_manual(values = c("piN" = "#FF7F20",
+                                "piS" = "#4F7899")) +
+  facet_grid(cols = vars(gl)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "right") +  
+  axis_formatting + legend_formatting + background_formatting
+plot3_4 <- plot_grid(plot3, plot4, rel_widths = w, 
+                     hjust = LR_adjust, vjust = UD_adjust)
+
+# pi
+ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
+                        levels = c("Tet_saliva", "Tet_body", "wmel_body", "Tet_legs", "wmel_legs"))
+plot5 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="pi",], 
+                aes(x = gl, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = gl, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(dpi)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "none") +  
+  axis_formatting + legend_formatting + background_formatting
+
+ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
+                        levels = c("Tet_saliva", "Tet_body", "Tet_legs","wmel_body", "wmel_legs"))
+plot6 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="pi",], 
+                aes(x = dpi, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = dpi, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(gl)) + 
+  theme(legend.title = element_blank(), 
+      legend.key = element_blank(), 
+      legend.position = "right") +  
+  axis_formatting + legend_formatting + background_formatting
+plot5_6 <- plot_grid(plot5, plot6, rel_widths = w, 
+                     hjust = LR_adjust, vjust = UD_adjust)
+
+# piNpiS
+ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
+                        levels = c("Tet_saliva", "Tet_body", "wmel_body", "Tet_legs", "wmel_legs"))
+plot7 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piNpiS",], 
+                aes(x = gl, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = gl, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(dpi)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "none") +  
+  axis_formatting + legend_formatting + background_formatting
+
+ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
+                        levels = c("Tet_saliva", "Tet_body", "Tet_legs","wmel_body", "wmel_legs"))
+plot8 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piNpiS",], 
+                aes(x = dpi, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = dpi, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(gl)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "right") +  
+  axis_formatting + legend_formatting + background_formatting
+plot7_8 <- plot_grid(plot7, plot8, rel_widths = w, 
+                     hjust = LR_adjust, vjust = UD_adjust)
+
+plot_snpgenie <- plot_grid(plot3_4, plot5_6, plot7_8, ncol = 1)
 
 
-## diversity
-plot_mut #mutation
-plot_mgs #mean gini simpson
-plot_mse #mean shannon entropy
-snpgenie_plot
+
+
+
+## R cadm
+df_R_cadm$gld <- paste(df_R_cadm$group, df_R_cadm$sample_type, df_R_cadm$dpi, sep = "_")
+df_R_cadm$gld <- as.factor(df_R_cadm$gld)
+levels <- levels(df_R_cadm$gld)
+
+i=1
+temp <- df_R_cadm[df_R_cadm$gld==levels[i] & df_R_cadm$dup=="not_dup",]
+temp_mgs <- ds(data.frame("b" = b(temp$Mean.Gini.Simpson), "g" = "mgs"), varname = "V1", groupnames = "g")
+temp_mse <- ds(data.frame("b" = b(temp$Mean.Shannon.Entropy), "g" = "mse"), varname = "V1", groupnames = "g")
+temp_rmsd <- ds(data.frame("b" = b(temp$RMSD), "g" = "rmsd"), varname = "V1", groupnames = "g")
+temp_umf <- ds(data.frame("b" = b(temp$Unique.Mut.Freq), "g" = "umf"), varname = "V1", groupnames = "g")
+temp_mfp <- ds(data.frame("b" = b(temp$Mut.Freq.per.10K), "g" = "mfp"), varname = "V1", groupnames = "g")
+ds_b_R <- rbind(temp_mgs, temp_mse, temp_rmsd, temp_umf, temp_mfp)
+ds_b_R$gld <- levels[i]
+for (i in 2:length(levels)) {
+  temp <- df_R_cadm[df_R_cadm$gld==levels[i] & df_R_cadm$dup=="not_dup",]
+  if (length(temp$MeanDepth)>1) {
+    temp_mgs <- ds(data.frame("b" = b(temp$Mean.Gini.Simpson), "g" = "mgs"), varname = "V1", groupnames = "g")
+    temp_mse <- ds(data.frame("b" = b(temp$Mean.Shannon.Entropy), "g" = "mse"), varname = "V1", groupnames = "g")
+    temp_rmsd <- ds(data.frame("b" = b(temp$RMSD), "g" = "rmsd"), varname = "V1", groupnames = "g")
+    temp_umf <- ds(data.frame("b" = b(temp$Unique.Mut.Freq), "g" = "umf"), varname = "V1", groupnames = "g")
+    temp_mfp <- ds(data.frame("b" = b(temp$Mut.Freq.per.10K), "g" = "mfp"), varname = "V1", groupnames = "g")
+    temp2 <- rbind(temp_mgs, temp_mse, temp_rmsd, temp_umf, temp_mfp)
+    temp2$gld <- levels[i]
+    ds_b_R <- rbind(ds_b_R, temp2)
+  }
+}
+ds_b_R <- separate(ds_b_R, "gld", c("group", "location", "dpi"), sep = "_")
+ds_b_R$gl <- factor(paste(ds_b_R$group, ds_b_R$location, sep = "_"), 
+                        levels = c("tet_saliva", "tet_body", "wmel_body", "tet_legs", "wmel_legs"))
+ds_b_R$gld <- as.factor(paste(ds_b_R$group, ds_b_R$location, ds_b_R$dpi, sep = "_"))
+ds_b_R$dpi <- factor(ds_b_R$dpi, levels = c("4", "7", "14"))
+ds_b_R$g <- factor(ds_b_R$g, levels = c("mgs", "mse", "rmsd", "umf", "mfp"))
+
+# mgs
+ds_b_R$gl <- factor(paste(ds_b_R$group, ds_b_R$location, sep = "_"), 
+                        levels = c("tet_saliva", "tet_body", "wmel_body", "tet_legs", "wmel_legs"))
+plot9 <- ggplot(data = ds_b_R[ds_b_R$g=="mgs",], 
+                aes(x = gl, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = gl, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(dpi)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "none") +  
+  axis_formatting + legend_formatting + background_formatting
+
+ds_b_R$gl <- factor(paste(ds_b_R$group, ds_b_R$location, sep = "_"), 
+                        levels = c("tet_saliva", "tet_body", "tet_legs","wmel_body", "wmel_legs"))
+plot10 <- ggplot(data = ds_b_R[ds_b_R$g=="mgs",], 
+                aes(x = dpi, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = dpi, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(gl)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "right") +  
+  axis_formatting + legend_formatting + background_formatting
+plot_mgs <- plot_grid(plot9, plot10, rel_widths = w, 
+                     hjust = LR_adjust, vjust = UD_adjust)
+
+# mse
+ds_b_R$gl <- factor(paste(ds_b_R$group, ds_b_R$location, sep = "_"), 
+                    levels = c("tet_saliva", "tet_body", "wmel_body", "tet_legs", "wmel_legs"))
+plot11 <- ggplot(data = ds_b_R[ds_b_R$g=="mse",], 
+                aes(x = gl, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = gl, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(dpi)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "none") +  
+  axis_formatting + legend_formatting + background_formatting
+
+ds_b_R$gl <- factor(paste(ds_b_R$group, ds_b_R$location, sep = "_"), 
+                    levels = c("tet_saliva", "tet_body", "tet_legs","wmel_body", "wmel_legs"))
+plot12 <- ggplot(data = ds_b_R[ds_b_R$g=="mse",], 
+                 aes(x = dpi, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = dpi, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(gl)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "right") +  
+  axis_formatting + legend_formatting + background_formatting
+plot_mse <- plot_grid(plot11, plot12, rel_widths = w, 
+                      hjust = LR_adjust, vjust = UD_adjust)
+
+# umf
+ds_b_R$gl <- factor(paste(ds_b_R$group, ds_b_R$location, sep = "_"), 
+                    levels = c("tet_saliva", "tet_body", "wmel_body", "tet_legs", "wmel_legs"))
+plot13 <- ggplot(data = ds_b_R[ds_b_R$g=="umf",], 
+                 aes(x = gl, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = gl, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(dpi)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "none") +  
+  axis_formatting + legend_formatting + background_formatting
+
+ds_b_R$gl <- factor(paste(ds_b_R$group, ds_b_R$location, sep = "_"), 
+                    levels = c("tet_saliva", "tet_body", "tet_legs","wmel_body", "wmel_legs"))
+plot14 <- ggplot(data = ds_b_R[ds_b_R$g=="umf",], 
+                 aes(x = dpi, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = dpi, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(gl)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "right") +  
+  axis_formatting + legend_formatting + background_formatting
+plot_umf <- plot_grid(plot13, plot14, rel_widths = w, 
+                      hjust = LR_adjust, vjust = UD_adjust)
+
+# mfp
+ds_b_R$gl <- factor(paste(ds_b_R$group, ds_b_R$location, sep = "_"), 
+                    levels = c("tet_saliva", "tet_body", "wmel_body", "tet_legs", "wmel_legs"))
+plot15 <- ggplot(data = ds_b_R[ds_b_R$g=="mfp",], 
+                 aes(x = gl, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = gl, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(dpi)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "none") +  
+  axis_formatting + legend_formatting + background_formatting
+
+ds_b_R$gl <- factor(paste(ds_b_R$group, ds_b_R$location, sep = "_"), 
+                    levels = c("tet_saliva", "tet_body", "tet_legs","wmel_body", "wmel_legs"))
+plot16 <- ggplot(data = ds_b_R[ds_b_R$g=="mfp",], 
+                 aes(x = dpi, y = V1, group = gld, color = g)) + 
+  geom_point(position = position_dodge(.9)) + 
+  geom_errorbar(aes(x = dpi, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
+                width = .2, position = position_dodge(.9)) + 
+  facet_grid(cols = vars(gl)) +
+  theme(legend.title = element_blank(), 
+        legend.key = element_blank(), 
+        legend.position = "right") +  
+  axis_formatting + legend_formatting + background_formatting
+plot_mfp <- plot_grid(plot15, plot16, rel_widths = w, 
+                      hjust = LR_adjust, vjust = UD_adjust)
+
+
+plot_R <- plot_grid(plot_mgs, plot_mse, plot_umf, plot_mfp, ncol = 1)

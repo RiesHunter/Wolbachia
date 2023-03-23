@@ -89,7 +89,7 @@ ntcounts_c$unique.G.SNV<-ifelse(ntcounts_c$G.SNV>0,1,0)
 ntcounts_c$unique.T.SNV<-ifelse(ntcounts_c$T.SNV>0,1,0)
 
 ## subset data for coverage >= 300
-highcov<-subset(ntcounts_c,ntcounts_c$coverage>299)
+highcov<-subset(ntcounts_c,ntcounts_c$coverage>=300)
 highcov$snv.freq<-((highcov$A.SNV + highcov$C.SNV + highcov$G.SNV + highcov$T.SNV)/highcov$coverage)
 highcov$sq.dev<-((highcov$snv.freq)^2)
 
