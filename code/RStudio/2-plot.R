@@ -113,7 +113,7 @@ dir_10_snpdat_TSV <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-h
 dir_10_snpdat_TXT <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/10_snpdat_TXT", sep="")
 dir_12_snpgenie <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/12_snpgenie", sep="")
 dir_14_R <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/14_R", sep="")
-dir_save <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run", sep="")
+dir_save <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/figs", sep="")
 
 #### dir_09_consensus_VCF ####
 ## these are the vcfs from the samples relative to their own consensus
@@ -986,3 +986,15 @@ plot_mfp <- plot_grid(plot15, plot16, rel_widths = w,
 
 
 plot_R <- plot_grid(plot_mgs, plot_mse, plot_umf, plot_mfp, ncol = 1)
+
+
+#### save ####
+setwd(dir_save)
+#Fig1
+ggsave("Fig1_snpgenie.pdf", plot_snpgenie,
+       width = 15, height = 5, 
+       units = "in", dpi = 320)
+#Fig2
+ggsave("Fig2_diversity.pdf", plot_R,
+       width = 15, height = 5, 
+       units = "in", dpi = 320)

@@ -111,7 +111,8 @@ palette_muts_NS_S <- c("Nonsynonymous" = "#FF7F20",
                        "Synonymous" = "#4F7899")
 
 #### Import and clean ####
-dir_15_b <- paste("/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run/15_barcode_analyses", sep="")
+dir_15_b <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/15_barcode_analyses", sep="")
+dir_save <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/figs", sep="")
 setwd(dir_15_b)
 
 #### Mean_bc_frequencies.R ####
@@ -165,7 +166,6 @@ df_barcode_freqs <- Reduce(full_join,list)
 #### Euclidean_distance_meanbcfreqs.R ####
  # R script to calculate Euclidean distance between barcode populations of two samples.
 all_bcs <- as.data.frame(table(df_barcode_freqs$barcode))
-all_bcs <- table[1]
 
 ## pairwise comparisons
 n <- length(list)
@@ -205,16 +205,109 @@ df_pairwise_euc <- df_compiled
 
 df_pairwise_euc$e <- log10(df_pairwise_euc$eucdistance)
 df_pairwise_euc$e[df_pairwise_euc$e=="-Inf"] <- 0
+
+## match string
+df_pairwise_euc$sample_1[grepl("7-2-tet-saliva",df_pairwise_euc$sample_1)] <- "Tet-saliva-7dpi_2"
+df_pairwise_euc$sample_1[grepl("7-3-tet-saliva",df_pairwise_euc$sample_1)] <- "Tet-saliva-7dpi_3"
+df_pairwise_euc$sample_1[grepl("14-1-tet-saliva",df_pairwise_euc$sample_1)] <- "Tet-saliva-14dpi_1"
+df_pairwise_euc$sample_1[grepl("14-3-tet-saliva",df_pairwise_euc$sample_1)] <- "Tet-saliva-14dpi_3"
+df_pairwise_euc$sample_1[grepl("7-1-tet-legs",df_pairwise_euc$sample_1)] <- "Tet-legs-7dpi_1"
+df_pairwise_euc$sample_1[grepl("7-2-tet-legs",df_pairwise_euc$sample_1)] <- "Tet-legs-7dpi_2"
+df_pairwise_euc$sample_1[grepl("7-3-tet-legs",df_pairwise_euc$sample_1)] <- "Tet-legs-7dpi_3"
+df_pairwise_euc$sample_1[grepl("14-1-tet-legs",df_pairwise_euc$sample_1)] <- "Tet-legs-14dpi_1"
+df_pairwise_euc$sample_1[grepl("14-2-tet-legs",df_pairwise_euc$sample_1)] <- "Tet-legs-14dpi_2"
+df_pairwise_euc$sample_1[grepl("14-3-tet-legs",df_pairwise_euc$sample_1)] <- "Tet-legs-14dpi_3"
+df_pairwise_euc$sample_1[grepl("4-1-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-4dpi_1"
+df_pairwise_euc$sample_1[grepl("4-2-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-4dpi_2"
+df_pairwise_euc$sample_1[grepl("4-3-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-4dpi_3"
+df_pairwise_euc$sample_1[grepl("7-1-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-7dpi_1"
+df_pairwise_euc$sample_1[grepl("7-2-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-7dpi_2"
+df_pairwise_euc$sample_1[grepl("7-3-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-7dpi_3"
+df_pairwise_euc$sample_1[grepl("dup-14-1-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-14dpi_1_dup"
+df_pairwise_euc$sample_1[grepl("14-1-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-14dpi_1"
+df_pairwise_euc$sample_1[grepl("dup-14-2-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-14dpi_2_dup"
+df_pairwise_euc$sample_1[grepl("14-2-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-14dpi_2"
+df_pairwise_euc$sample_1[grepl("dup-14-3-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-14dpi_3_dup"
+df_pairwise_euc$sample_1[grepl("14-3-tet-body",df_pairwise_euc$sample_1)] <- "Tet-body-14dpi_3"
+df_pairwise_euc$sample_1[grepl("7-1-wmel-body",df_pairwise_euc$sample_1)] <- "wmel-body-7dpi_1"
+df_pairwise_euc$sample_1[grepl("7-2-wmel-body",df_pairwise_euc$sample_1)] <- "wmel-body-7dpi_2"
+df_pairwise_euc$sample_1[grepl("7-3-wmel-body",df_pairwise_euc$sample_1)] <- "wmel-body-7dpi_3"
+df_pairwise_euc$sample_1[grepl("14-1-wmel-body",df_pairwise_euc$sample_1)] <- "wmel-body-14dpi_1"
+df_pairwise_euc$sample_1[grepl("14-2-wmel-body",df_pairwise_euc$sample_1)] <- "wmel-body-14dpi_2"
+df_pairwise_euc$sample_1[grepl("14-3-wmel-body",df_pairwise_euc$sample_1)] <- "wmel-body-14dpi_3"
+df_pairwise_euc$sample_1[grepl("7-1-wmel-legs",df_pairwise_euc$sample_1)] <- "wmel-legs-7dpi_1"
+df_pairwise_euc$sample_1[grepl("14-2-wmel-legs",df_pairwise_euc$sample_1)] <- "wmel-legs-14dpi_2"
+df_pairwise_euc$sample_2[grepl("7-2-tet-saliva",df_pairwise_euc$sample_2)] <- "Tet-saliva-7dpi_2"
+df_pairwise_euc$sample_2[grepl("7-3-tet-saliva",df_pairwise_euc$sample_2)] <- "Tet-saliva-7dpi_3"
+df_pairwise_euc$sample_2[grepl("14-1-tet-saliva",df_pairwise_euc$sample_2)] <- "Tet-saliva-14dpi_1"
+df_pairwise_euc$sample_2[grepl("14-3-tet-saliva",df_pairwise_euc$sample_2)] <- "Tet-saliva-14dpi_3"
+df_pairwise_euc$sample_2[grepl("7-1-tet-legs",df_pairwise_euc$sample_2)] <- "Tet-legs-7dpi_1"
+df_pairwise_euc$sample_2[grepl("7-2-tet-legs",df_pairwise_euc$sample_2)] <- "Tet-legs-7dpi_2"
+df_pairwise_euc$sample_2[grepl("7-3-tet-legs",df_pairwise_euc$sample_2)] <- "Tet-legs-7dpi_3"
+df_pairwise_euc$sample_2[grepl("14-1-tet-legs",df_pairwise_euc$sample_2)] <- "Tet-legs-14dpi_1"
+df_pairwise_euc$sample_2[grepl("14-2-tet-legs",df_pairwise_euc$sample_2)] <- "Tet-legs-14dpi_2"
+df_pairwise_euc$sample_2[grepl("14-3-tet-legs",df_pairwise_euc$sample_2)] <- "Tet-legs-14dpi_3"
+df_pairwise_euc$sample_2[grepl("4-1-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-4dpi_1"
+df_pairwise_euc$sample_2[grepl("4-2-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-4dpi_2"
+df_pairwise_euc$sample_2[grepl("4-3-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-4dpi_3"
+df_pairwise_euc$sample_2[grepl("7-1-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-7dpi_1"
+df_pairwise_euc$sample_2[grepl("7-2-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-7dpi_2"
+df_pairwise_euc$sample_2[grepl("7-3-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-7dpi_3"
+df_pairwise_euc$sample_2[grepl("dup-14-1-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-14dpi_1_dup"
+df_pairwise_euc$sample_2[grepl("14-1-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-14dpi_1"
+df_pairwise_euc$sample_2[grepl("dup-14-2-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-14dpi_2_dup"
+df_pairwise_euc$sample_2[grepl("14-2-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-14dpi_2"
+df_pairwise_euc$sample_2[grepl("dup-14-3-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-14dpi_3_dup"
+df_pairwise_euc$sample_2[grepl("14-3-tet-body",df_pairwise_euc$sample_2)] <- "Tet-body-14dpi_3"
+df_pairwise_euc$sample_2[grepl("7-1-wmel-body",df_pairwise_euc$sample_2)] <- "wmel-body-7dpi_1"
+df_pairwise_euc$sample_2[grepl("7-2-wmel-body",df_pairwise_euc$sample_2)] <- "wmel-body-7dpi_2"
+df_pairwise_euc$sample_2[grepl("7-3-wmel-body",df_pairwise_euc$sample_2)] <- "wmel-body-7dpi_3"
+df_pairwise_euc$sample_2[grepl("14-1-wmel-body",df_pairwise_euc$sample_2)] <- "wmel-body-14dpi_1"
+df_pairwise_euc$sample_2[grepl("14-2-wmel-body",df_pairwise_euc$sample_2)] <- "wmel-body-14dpi_2"
+df_pairwise_euc$sample_2[grepl("14-3-wmel-body",df_pairwise_euc$sample_2)] <- "wmel-body-14dpi_3"
+df_pairwise_euc$sample_2[grepl("7-1-wmel-legs",df_pairwise_euc$sample_2)] <- "wmel-legs-7dpi_1"
+df_pairwise_euc$sample_2[grepl("14-2-wmel-legs",df_pairwise_euc$sample_2)] <- "wmel-legs-14dpi_2"
+
+#df_pairwise_euc$sample_1 <- gsub("dpi_1", "", df_pairwise_euc$sample_1)
+#df_pairwise_euc$sample_1 <- gsub("dpi_2", "", df_pairwise_euc$sample_1)
+#df_pairwise_euc$sample_1 <- gsub("dpi_3", "", df_pairwise_euc$sample_1)
+#df_pairwise_euc$sample_2 <- gsub("dpi_1", "", df_pairwise_euc$sample_2)
+#df_pairwise_euc$sample_2 <- gsub("dpi_2", "", df_pairwise_euc$sample_2)
+#df_pairwise_euc$sample_2 <- gsub("dpi_3", "", df_pairwise_euc$sample_2)
+
 ## heatmap
 exclude <- c("B1-2-ZIKV-seq-2-2-mouse2-serum_S29", "B1-1-ZIKV-seq-2-2-mouse1-serum_S30", 
              "PC-ZIKV-PR-SetA_S21", "PC-ZIKV-SetC_S21", "PC-ZIKV-PR-SetD_S21", 
              "PC-ZIKV-PR-SetA_S25", "PC-ZIKV-PR-SetB_S43", "PC-ZIKV-PR-SetE_S43", "NC-H2O-SetC_S22")
 df_pairwise_euc_filtered <- filter(df_pairwise_euc, sample_1 %!in% exclude)
 df_pairwise_euc_filtered <- filter(df_pairwise_euc_filtered, sample_2 %!in% exclude)
+df_pairwise_euc_filtered$sample_2 <- factor(df_pairwise_euc_filtered$sample_2, 
+                                            levels = c("Tet-saliva-7dpi_3", "Tet-saliva-7dpi_2",
+                                                       "Tet-body-4dpi_1", "Tet-body-4dpi_2", "Tet-body-4dpi_3", 
+                                                       "Tet-body-7dpi_1","Tet-body-7dpi_2", "Tet-body-7dpi_3", 
+                                                       "Tet-legs-7dpi_1", "Tet-legs-7dpi_2", "Tet-legs-7dpi_3", 
+                                                       "Tet-legs-14dpi_1", "Tet-legs-14dpi_3",
+                                                       "Tet-saliva-14dpi_1","Tet-saliva-14dpi_3", 
+                                                       "wmel-body-7dpi_1", "wmel-body-7dpi_2",
+                                                       "wmel-body-14dpi_1", "wmel-body-14dpi_2", "wmel-body-14dpi_3", 
+                                                       "wmel-legs-7dpi_1", 
+                                                       "wmel-legs-14dpi_2"))
+df_pairwise_euc_filtered$sample_1 <- factor(df_pairwise_euc_filtered$sample_1, 
+                                            levels = c("wmel-legs-14dpi_2",
+                                                       "wmel-legs-7dpi_1", 
+                                                       "wmel-body-14dpi_1", "wmel-body-14dpi_2", "wmel-body-14dpi_3", 
+                                                       "wmel-body-7dpi_1", "wmel-body-7dpi_2",
+                                                       "Tet-saliva-14dpi_1","Tet-saliva-14dpi_3", 
+                                                       "Tet-legs-14dpi_1", "Tet-legs-14dpi_3",
+                                                       "Tet-legs-7dpi_1", "Tet-legs-7dpi_2", "Tet-legs-7dpi_3", 
+                                                       "Tet-body-7dpi_1","Tet-body-7dpi_2", "Tet-body-7dpi_3", 
+                                                       "Tet-body-4dpi_1", "Tet-body-4dpi_2", "Tet-body-4dpi_3", 
+                                                       "Tet-saliva-7dpi_2", "Tet-saliva-7dpi_3"))
+
 test2 <- as.matrix(xtabs(
   eucdistance ~ sample_1 + sample_2, 
   data=df_pairwise_euc_filtered))
-heatmap(test2)
+heatmap(test2, Colv = NA, Rowv = NA)
 
 
 df_pairwise_euc_filtered$sample_1[grepl("7-2-tet-saliva",df_pairwise_euc_filtered$sample_1)] <- "Tet-saliva-7dpi_2"
@@ -278,6 +371,8 @@ df_pairwise_euc_filtered$sample_2[grepl("14-2-wmel-body",df_pairwise_euc_filtere
 df_pairwise_euc_filtered$sample_2[grepl("14-3-wmel-body",df_pairwise_euc_filtered$sample_2)] <- "wmel-body-14dpi_3"
 df_pairwise_euc_filtered$sample_2[grepl("7-1-wmel-legs",df_pairwise_euc_filtered$sample_2)] <- "wmel-legs_7dpi_1"
 df_pairwise_euc_filtered$sample_2[grepl("14-2-wmel-legs",df_pairwise_euc_filtered$sample_2)] <- "wmel-legs_14dpi_2"
+
+
 
 df_pairwise_euc_filtered %>% 
   select(sample_1, sample_2, eucdistance) %>% 
@@ -355,7 +450,7 @@ ds_treatment_umi_totals$dpi <- factor(ds_treatment_umi_totals$dpi,
 
 
 ## sample total by group_location; group = dpi
-ggplot(ds_treatment_umi_totals, aes(color = dpi), group = dpi) + 
+plot1 <- ggplot(ds_treatment_umi_totals, aes(color = dpi), group = dpi) + 
   geom_point(aes(x = group_location, y = sample_total),
              position = position_dodge(.75)) + 
   geom_errorbar(aes(x = group_location, y = sample_total, 
@@ -365,7 +460,7 @@ ggplot(ds_treatment_umi_totals, aes(color = dpi), group = dpi) +
   theme_bw()
 
 ## sample total by dpi; group = group_location
-ggplot(ds_treatment_umi_totals, aes(color = group_location), group = group_location) + 
+plot2 <- ggplot(ds_treatment_umi_totals, aes(color = group_location), group = group_location) + 
   geom_point(aes(x = dpi, y = sample_total),
              position = position_dodge(.75)) + 
   geom_errorbar(aes(x = dpi, y = sample_total, 
@@ -373,3 +468,11 @@ ggplot(ds_treatment_umi_totals, aes(color = group_location), group = group_locat
                     ymax = sample_total + sd), 
                 width = .15, position = position_dodge(.75)) +
   theme_bw()
+plot <- plot_grid(plot1, plot2, nrow = 2)
+
+#### save ####
+setwd(dir_save)
+#Fig1
+ggsave("Fig3_barcodes.pdf", plot,
+       width = 5, height = 5, 
+       units = "in", dpi = 320)
