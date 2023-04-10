@@ -101,13 +101,13 @@ UD_adjust = 1.1 # less = down
 ## palettes
 palette_muts <- c("Nonsynonymous" = "#FF7F20",
                   "Synonymous" = "#4F7899",
-                  "Missense" = "#7AD9C2")
+                  "Stop gained" = "#7AD9C2")
 # mutation types without stop
 palette_muts_NS_S <- c("Nonsynonymous" = "#FF7F20",
                        "Synonymous" = "#4F7899")
 
 #### Import and clean ####
-dir_09_consensus_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_consensus_VCF", sep="")
+dir_09_consensus_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_consensus_VCF/fn_ann", sep="")
 dir_09_reference_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_reference_VCF", sep="")
 dir_10_snpdat_TSV <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/10_snpdat_TSV", sep="")
 dir_10_snpdat_TXT <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/10_snpdat_TXT", sep="")
@@ -117,29 +117,53 @@ dir_save <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc
 
 #### dir_09_consensus_VCF ####
 ## these are the vcfs from the samples relative to their own consensus
-setwd(dir_09_consensus_VCF)
-vcf <- dir(pattern="_L001.vcf")
-names_trunc <- gsub("_L001.vcf","",vcf)
+setwd(dir_09_consensus_VCF); dir()
+vcf <- dir(pattern="_L001_fn_ann.vcf")
+names_trunc <- gsub("_L001_fn_ann.vcf","",vcf)
 names_trunc <- gsub("09-consensus_","",names_trunc)
 n <- length(vcf)
 list <- vector("list",n)
+
+## Read all tables in vcf, apply to list, change columns
 for (i in 1:n) {
   list[[i]] <- read.vcfR(vcf[i], verbose=T)
   list[[i]] <- as.data.frame(list[[i]]@fix)
-  ifelse(length(list[[i]]$CHROM)>0, 
-         list[[i]]$FILTER <- names_trunc[i],
-         print("No variants!"))
-  ifelse(length(list[[i]]$CHROM)>0, 
-         list[[i]] <- separate(list[[i]], "INFO", c("DP", "AF_1", "SB", "DP4"), sep = ";"),
-         print("No variants!"))
-  ifelse(length(list[[i]]$CHROM)>0, 
-         list[[i]] <- separate(list[[i]], "AF_1", c("Label", "AF"), sep = "="),
-         print("No variants!"))
   names(list) <- names_trunc}
+
+## remove blank data frames
+list <- Filter(function(x) dim(x)[1] > 0, list)
+
+## separate by column
+n <- length(list)
+for (i in 1:n) {
+  list[[i]]$ID <- names_trunc[[i]]
+  
+  # separate the info column into its respective pieces
+  list[[i]] <- separate(list[[i]],"INFO",c("DP","AF","SB","DP4", "snpEff"),
+                        sep=";",convert=FALSE)
+  
+  # separate snpEff column into its respective pieces
+  list[[i]] <- separate(list[[i]],"snpEff",c("Allele","Ann","Ann_Impact","Gene_Name",
+                                             "Gene_ID","Feature_Type","Feature_ID","Transcript_BioType",
+                                             "Rank","HGVS.c","HGVS.p"),
+                        sep="\\|",convert=FALSE)
+  
+  # separate the leftover info column into the label (discarded) and value
+  list[[i]] <- separate(list[[i]],"DP",c("DP_label","DP"),sep="=",convert=FALSE)  
+  list[[i]] <- separate(list[[i]],"AF",c("AF_label","AF"),sep="=",convert=FALSE) 
+  ## remove columns by string in name
+  list[[i]] <- list[[i]] %>% select(-contains(c("_label","Gene_Name","Gene_ID","DP4","Feature_Type","Rank")))
+}
+
 df_09_consensus_VCF <- Reduce(full_join,list)
 df_09_consensus_VCF <- df_09_consensus_VCF[df_09_consensus_VCF$AF > 0.01,]
 df_09_consensus_VCF$POS <- as.integer(df_09_consensus_VCF$POS)
 df_09_consensus_VCF$AF <- as.numeric(df_09_consensus_VCF$AF)
+
+df_09_consensus_VCF$Ann <- as.factor(df_09_consensus_VCF$Ann)
+df_09_consensus_VCF$Ann <- gsub("missense_variant","Nonsynonymous",df_09_consensus_VCF$Ann)
+df_09_consensus_VCF$Ann <- gsub("synonymous_variant","Synonymous",df_09_consensus_VCF$Ann)
+df_09_consensus_VCF$Ann <- gsub("stop_gained","Stop gained",df_09_consensus_VCF$Ann)
 
 #### dir_09_reference_VCF ####
 ## these are the vcfs from the samples relative to the reference
@@ -166,6 +190,165 @@ df_09_reference_VCF <- Reduce(full_join,list)
 df_09_reference_VCF <- df_09_reference_VCF[df_09_reference_VCF$AF > 0.01,]
 df_09_reference_VCF$POS <- as.integer(df_09_reference_VCF$POS)
 df_09_reference_VCF$AF <- as.numeric(df_09_reference_VCF$AF)
+
+#### string matches VCF ####
+## consensus
+df_09_consensus_VCF$ID[grepl("7-2-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
+df_09_consensus_VCF$ID[grepl("7-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
+df_09_consensus_VCF$ID[grepl("14-1-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
+df_09_consensus_VCF$ID[grepl("14-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
+df_09_consensus_VCF$ID[grepl("7-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_1"
+df_09_consensus_VCF$ID[grepl("7-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_2"
+df_09_consensus_VCF$ID[grepl("7-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_3"
+df_09_consensus_VCF$ID[grepl("14-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_1"
+df_09_consensus_VCF$ID[grepl("14-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_2"
+df_09_consensus_VCF$ID[grepl("14-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_3"
+df_09_consensus_VCF$ID[grepl("4-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_1"
+df_09_consensus_VCF$ID[grepl("4-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_2"
+df_09_consensus_VCF$ID[grepl("4-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_3"
+df_09_consensus_VCF$ID[grepl("7-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_1"
+df_09_consensus_VCF$ID[grepl("7-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_2"
+df_09_consensus_VCF$ID[grepl("7-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_3"
+df_09_consensus_VCF$ID[grepl("dup-14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
+df_09_consensus_VCF$ID[grepl("14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1"
+df_09_consensus_VCF$ID[grepl("dup-14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
+df_09_consensus_VCF$ID[grepl("14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2"
+df_09_consensus_VCF$ID[grepl("dup-14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
+df_09_consensus_VCF$ID[grepl("14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3"
+df_09_consensus_VCF$ID[grepl("7-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_1"
+df_09_consensus_VCF$ID[grepl("7-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_2"
+df_09_consensus_VCF$ID[grepl("7-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_3"
+df_09_consensus_VCF$ID[grepl("14-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_1"
+df_09_consensus_VCF$ID[grepl("14-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_2"
+df_09_consensus_VCF$ID[grepl("14-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_3"
+df_09_consensus_VCF$ID[grepl("7-1-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs-7dpi_1"
+df_09_consensus_VCF$ID[grepl("14-2-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs-14dpi_2"
+df_09_consensus_VCF$ID[grepl("7-2-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
+df_09_consensus_VCF$ID[grepl("7-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
+df_09_consensus_VCF$ID[grepl("14-1-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
+df_09_consensus_VCF$ID[grepl("14-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
+df_09_consensus_VCF$ID[grepl("7-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_1"
+df_09_consensus_VCF$ID[grepl("7-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_2"
+df_09_consensus_VCF$ID[grepl("7-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_3"
+df_09_consensus_VCF$ID[grepl("14-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_1"
+df_09_consensus_VCF$ID[grepl("14-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_2"
+df_09_consensus_VCF$ID[grepl("14-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_3"
+df_09_consensus_VCF$ID[grepl("4-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_1"
+df_09_consensus_VCF$ID[grepl("4-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_2"
+df_09_consensus_VCF$ID[grepl("4-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_3"
+df_09_consensus_VCF$ID[grepl("7-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_1"
+df_09_consensus_VCF$ID[grepl("7-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_2"
+df_09_consensus_VCF$ID[grepl("7-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_3"
+df_09_consensus_VCF$ID[grepl("dup-14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
+df_09_consensus_VCF$ID[grepl("14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1"
+df_09_consensus_VCF$ID[grepl("dup-14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
+df_09_consensus_VCF$ID[grepl("14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2"
+df_09_consensus_VCF$ID[grepl("dup-14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
+df_09_consensus_VCF$ID[grepl("14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3"
+df_09_consensus_VCF$ID[grepl("7-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_1"
+df_09_consensus_VCF$ID[grepl("7-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_2"
+df_09_consensus_VCF$ID[grepl("7-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_3"
+df_09_consensus_VCF$ID[grepl("14-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_1"
+df_09_consensus_VCF$ID[grepl("14-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_2"
+df_09_consensus_VCF$ID[grepl("14-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_3"
+df_09_consensus_VCF$ID[grepl("7-1-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs_7dpi_1"
+df_09_consensus_VCF$ID[grepl("14-2-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs_14dpi_2"
+df_09_consensus_VCF_PC <- df_09_consensus_VCF[grepl("PC",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF_ZIKV <- df_09_consensus_VCF[grepl("ZIKV",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF_NC <- df_09_consensus_VCF[grepl("NC",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF <- df_09_consensus_VCF[!grepl("PC",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF <- df_09_consensus_VCF[!grepl("ZIKV",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF <- df_09_consensus_VCF[!grepl("NC",df_09_consensus_VCF$FILTER),]
+df_09_consensus_VCF <- separate(df_09_consensus_VCF, "ID", c("1","2","3"), sep="-")
+df_09_consensus_VCF <- separate(df_09_consensus_VCF, "3", c("3","4"), sep="_")
+df_09_consensus_VCF$`3` <- as.integer(gsub("dpi", "", df_09_consensus_VCF$`3`))
+
+## reference
+#df_09_reference_VCF$FILTER[grepl("7-2-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
+#df_09_reference_VCF$FILTER[grepl("7-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
+#df_09_reference_VCF$FILTER[grepl("14-1-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
+#df_09_reference_VCF$FILTER[grepl("14-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
+#df_09_reference_VCF$FILTER[grepl("7-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_1"
+#df_09_reference_VCF$FILTER[grepl("7-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_2"
+#df_09_reference_VCF$FILTER[grepl("7-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_3"
+#df_09_reference_VCF$FILTER[grepl("14-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_1"
+#df_09_reference_VCF$FILTER[grepl("14-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_2"
+#df_09_reference_VCF$FILTER[grepl("14-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_3"
+#df_09_reference_VCF$FILTER[grepl("4-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_1"
+#df_09_reference_VCF$FILTER[grepl("4-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_2"
+#df_09_reference_VCF$FILTER[grepl("4-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_3"
+#df_09_reference_VCF$FILTER[grepl("7-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_1"
+#df_09_reference_VCF$FILTER[grepl("7-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_2"
+#df_09_reference_VCF$FILTER[grepl("7-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_3"
+#df_09_reference_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
+#df_09_reference_VCF$FILTER[grepl("14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1"
+#df_09_reference_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
+#df_09_reference_VCF$FILTER[grepl("14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2"
+#df_09_reference_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
+#df_09_reference_VCF$FILTER[grepl("14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3"
+#df_09_reference_VCF$FILTER[grepl("7-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_1"
+#df_09_reference_VCF$FILTER[grepl("7-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_2"
+#df_09_reference_VCF$FILTER[grepl("7-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_3"
+#df_09_reference_VCF$FILTER[grepl("14-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_1"
+#df_09_reference_VCF$FILTER[grepl("14-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_2"
+#df_09_reference_VCF$FILTER[grepl("14-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_3"
+#df_09_reference_VCF$FILTER[grepl("7-1-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs-7dpi_1"
+#df_09_reference_VCF$FILTER[grepl("14-2-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs-14dpi_2"
+#df_09_reference_VCF$FILTER[grepl("7-2-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
+#df_09_reference_VCF$FILTER[grepl("7-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
+#df_09_reference_VCF$FILTER[grepl("14-1-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
+#df_09_reference_VCF$FILTER[grepl("14-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
+#df_09_reference_VCF$FILTER[grepl("7-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_1"
+#df_09_reference_VCF$FILTER[grepl("7-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_2"
+#df_09_reference_VCF$FILTER[grepl("7-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_3"
+#df_09_reference_VCF$FILTER[grepl("14-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_1"
+#df_09_reference_VCF$FILTER[grepl("14-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_2"
+#df_09_reference_VCF$FILTER[grepl("14-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_3"
+#df_09_reference_VCF$FILTER[grepl("4-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_1"
+#df_09_reference_VCF$FILTER[grepl("4-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_2"
+#df_09_reference_VCF$FILTER[grepl("4-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_3"
+#df_09_reference_VCF$FILTER[grepl("7-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_1"
+#df_09_reference_VCF$FILTER[grepl("7-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_2"
+#df_09_reference_VCF$FILTER[grepl("7-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_3"
+#df_09_reference_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
+#df_09_reference_VCF$FILTER[grepl("14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1"
+#df_09_reference_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
+#df_09_reference_VCF$FILTER[grepl("14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2"
+#df_09_reference_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
+#df_09_reference_VCF$FILTER[grepl("14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3"
+#df_09_reference_VCF$FILTER[grepl("7-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_1"
+#df_09_reference_VCF$FILTER[grepl("7-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_2"
+#df_09_reference_VCF$FILTER[grepl("7-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_3"
+#df_09_reference_VCF$FILTER[grepl("14-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_1"
+#df_09_reference_VCF$FILTER[grepl("14-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_2"
+#df_09_reference_VCF$FILTER[grepl("14-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_3"
+#df_09_reference_VCF$FILTER[grepl("7-1-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs_7dpi_1"
+#df_09_reference_VCF$FILTER[grepl("14-2-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs_14dpi_2"
+#df_09_reference_VCF_PC <- df_09_reference_VCF[grepl("PC",df_09_reference_VCF$FILTER),]
+#df_09_reference_VCF_ZIKV <- df_09_reference_VCF[grepl("ZIKV",df_09_reference_VCF$FILTER),]
+#df_09_reference_VCF_NC <- df_09_reference_VCF[grepl("NC",df_09_reference_VCF$FILTER),]
+#df_09_reference_VCF <- df_09_reference_VCF[!grepl("ZIKV",df_09_reference_VCF$FILTER),]
+#df_09_reference_VCF <- separate(df_09_reference_VCF, "FILTER", c("1","2","3"), sep="-")
+#df_09_reference_VCF <- separate(df_09_reference_VCF, "3", c("3","4"), sep="_")
+#df_09_reference_VCF$`3` <- as.integer(gsub("dpi", "", df_09_reference_VCF$`3`))
+
+## groups
+df_09_consensus_VCF$group_location <- paste(df_09_consensus_VCF$`1`, 
+                                            df_09_consensus_VCF$`2`, sep = "_")
+df_09_consensus_VCF$group_location_dpi <- paste(df_09_consensus_VCF$`1`, 
+                                                df_09_consensus_VCF$`2`, 
+                                                df_09_consensus_VCF$`3`, 
+                                                sep = "_")
+#df_09_reference_VCF$group_location <- paste(df_09_reference_VCF$`1`, 
+#                                            df_09_reference_VCF$`2`, sep = "_")
+#df_09_reference_VCF$group_location_dpi <- paste(df_09_reference_VCF$`1`, 
+#                                                df_09_reference_VCF$`2`, 
+#                                                df_09_reference_VCF$`3`, 
+#                                                sep = "_")
+df_09_consensus_VCF$group_location <- as.factor(df_09_consensus_VCF$group_location)
+df_09_consensus_VCF$group_location_dpi <- as.factor(df_09_consensus_VCF$group_location_dpi)
+#df_09_reference_VCF$group_location <- as.factor(df_09_reference_VCF$group_location)
+#df_09_reference_VCF$group_location_dpi <- as.factor(df_09_reference_VCF$group_location_dpi)
 
 #### dir_10_snpdat_TSV #### not_done####
 
@@ -431,164 +614,7 @@ for (i in 1:n) {
   names(list) <- names_trunc}
 df_R_ms <- Reduce(full_join,list)
 
-#### string matches ####
-## consensus
-df_09_consensus_VCF$FILTER[grepl("7-2-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
-df_09_consensus_VCF$FILTER[grepl("7-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
-df_09_consensus_VCF$FILTER[grepl("14-1-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
-df_09_consensus_VCF$FILTER[grepl("14-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
-df_09_consensus_VCF$FILTER[grepl("7-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_1"
-df_09_consensus_VCF$FILTER[grepl("7-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_2"
-df_09_consensus_VCF$FILTER[grepl("7-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_3"
-df_09_consensus_VCF$FILTER[grepl("14-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_1"
-df_09_consensus_VCF$FILTER[grepl("14-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_2"
-df_09_consensus_VCF$FILTER[grepl("14-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_3"
-df_09_consensus_VCF$FILTER[grepl("4-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_1"
-df_09_consensus_VCF$FILTER[grepl("4-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_2"
-df_09_consensus_VCF$FILTER[grepl("4-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_3"
-df_09_consensus_VCF$FILTER[grepl("7-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_1"
-df_09_consensus_VCF$FILTER[grepl("7-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_2"
-df_09_consensus_VCF$FILTER[grepl("7-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_3"
-df_09_consensus_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
-df_09_consensus_VCF$FILTER[grepl("14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1"
-df_09_consensus_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
-df_09_consensus_VCF$FILTER[grepl("14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2"
-df_09_consensus_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
-df_09_consensus_VCF$FILTER[grepl("14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3"
-df_09_consensus_VCF$FILTER[grepl("7-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_1"
-df_09_consensus_VCF$FILTER[grepl("7-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_2"
-df_09_consensus_VCF$FILTER[grepl("7-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_3"
-df_09_consensus_VCF$FILTER[grepl("14-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_1"
-df_09_consensus_VCF$FILTER[grepl("14-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_2"
-df_09_consensus_VCF$FILTER[grepl("14-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_3"
-df_09_consensus_VCF$FILTER[grepl("7-1-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs-7dpi_1"
-df_09_consensus_VCF$FILTER[grepl("14-2-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs-14dpi_2"
-df_09_consensus_VCF$FILTER[grepl("7-2-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
-df_09_consensus_VCF$FILTER[grepl("7-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
-df_09_consensus_VCF$FILTER[grepl("14-1-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
-df_09_consensus_VCF$FILTER[grepl("14-3-tet-saliva",df_09_consensus_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
-df_09_consensus_VCF$FILTER[grepl("7-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_1"
-df_09_consensus_VCF$FILTER[grepl("7-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_2"
-df_09_consensus_VCF$FILTER[grepl("7-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-7dpi_3"
-df_09_consensus_VCF$FILTER[grepl("14-1-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_1"
-df_09_consensus_VCF$FILTER[grepl("14-2-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_2"
-df_09_consensus_VCF$FILTER[grepl("14-3-tet-legs",df_09_consensus_VCF$FILTER)] <- "Tet-legs-14dpi_3"
-df_09_consensus_VCF$FILTER[grepl("4-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_1"
-df_09_consensus_VCF$FILTER[grepl("4-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_2"
-df_09_consensus_VCF$FILTER[grepl("4-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-4dpi_3"
-df_09_consensus_VCF$FILTER[grepl("7-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_1"
-df_09_consensus_VCF$FILTER[grepl("7-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_2"
-df_09_consensus_VCF$FILTER[grepl("7-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-7dpi_3"
-df_09_consensus_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
-df_09_consensus_VCF$FILTER[grepl("14-1-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_1"
-df_09_consensus_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
-df_09_consensus_VCF$FILTER[grepl("14-2-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_2"
-df_09_consensus_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
-df_09_consensus_VCF$FILTER[grepl("14-3-tet-body",df_09_consensus_VCF$FILTER)] <- "Tet-body-14dpi_3"
-df_09_consensus_VCF$FILTER[grepl("7-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_1"
-df_09_consensus_VCF$FILTER[grepl("7-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_2"
-df_09_consensus_VCF$FILTER[grepl("7-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-7dpi_3"
-df_09_consensus_VCF$FILTER[grepl("14-1-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_1"
-df_09_consensus_VCF$FILTER[grepl("14-2-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_2"
-df_09_consensus_VCF$FILTER[grepl("14-3-wmel-body",df_09_consensus_VCF$FILTER)] <- "wmel-body-14dpi_3"
-df_09_consensus_VCF$FILTER[grepl("7-1-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs_7dpi_1"
-df_09_consensus_VCF$FILTER[grepl("14-2-wmel-legs",df_09_consensus_VCF$FILTER)] <- "wmel-legs_14dpi_2"
-df_09_consensus_VCF_PC <- df_09_consensus_VCF[grepl("PC",df_09_consensus_VCF$FILTER),]
-df_09_consensus_VCF_ZIKV <- df_09_consensus_VCF[grepl("ZIKV",df_09_consensus_VCF$FILTER),]
-df_09_consensus_VCF <- df_09_consensus_VCF[!grepl("PC",df_09_consensus_VCF$FILTER),]
-df_09_consensus_VCF <- df_09_consensus_VCF[!grepl("ZIKV",df_09_consensus_VCF$FILTER),]
-df_09_consensus_VCF <- separate(df_09_consensus_VCF, "FILTER", c("1","2","3"), sep="-")
-df_09_consensus_VCF <- separate(df_09_consensus_VCF, "3", c("3","4"), sep="_")
-df_09_consensus_VCF$`3` <- as.integer(gsub("dpi", "", df_09_consensus_VCF$`3`))
-
-## reference
-df_09_reference_VCF$FILTER[grepl("7-2-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
-df_09_reference_VCF$FILTER[grepl("7-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
-df_09_reference_VCF$FILTER[grepl("14-1-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
-df_09_reference_VCF$FILTER[grepl("14-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
-df_09_reference_VCF$FILTER[grepl("7-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_1"
-df_09_reference_VCF$FILTER[grepl("7-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_2"
-df_09_reference_VCF$FILTER[grepl("7-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_3"
-df_09_reference_VCF$FILTER[grepl("14-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_1"
-df_09_reference_VCF$FILTER[grepl("14-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_2"
-df_09_reference_VCF$FILTER[grepl("14-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_3"
-df_09_reference_VCF$FILTER[grepl("4-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_1"
-df_09_reference_VCF$FILTER[grepl("4-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_2"
-df_09_reference_VCF$FILTER[grepl("4-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_3"
-df_09_reference_VCF$FILTER[grepl("7-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_1"
-df_09_reference_VCF$FILTER[grepl("7-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_2"
-df_09_reference_VCF$FILTER[grepl("7-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_3"
-df_09_reference_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
-df_09_reference_VCF$FILTER[grepl("14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1"
-df_09_reference_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
-df_09_reference_VCF$FILTER[grepl("14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2"
-df_09_reference_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
-df_09_reference_VCF$FILTER[grepl("14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3"
-df_09_reference_VCF$FILTER[grepl("7-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_1"
-df_09_reference_VCF$FILTER[grepl("7-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_2"
-df_09_reference_VCF$FILTER[grepl("7-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_3"
-df_09_reference_VCF$FILTER[grepl("14-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_1"
-df_09_reference_VCF$FILTER[grepl("14-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_2"
-df_09_reference_VCF$FILTER[grepl("14-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_3"
-df_09_reference_VCF$FILTER[grepl("7-1-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs-7dpi_1"
-df_09_reference_VCF$FILTER[grepl("14-2-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs-14dpi_2"
-df_09_reference_VCF$FILTER[grepl("7-2-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_2"
-df_09_reference_VCF$FILTER[grepl("7-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-7dpi_3"
-df_09_reference_VCF$FILTER[grepl("14-1-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_1"
-df_09_reference_VCF$FILTER[grepl("14-3-tet-saliva",df_09_reference_VCF$FILTER)] <- "Tet-saliva-14dpi_3"
-df_09_reference_VCF$FILTER[grepl("7-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_1"
-df_09_reference_VCF$FILTER[grepl("7-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_2"
-df_09_reference_VCF$FILTER[grepl("7-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-7dpi_3"
-df_09_reference_VCF$FILTER[grepl("14-1-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_1"
-df_09_reference_VCF$FILTER[grepl("14-2-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_2"
-df_09_reference_VCF$FILTER[grepl("14-3-tet-legs",df_09_reference_VCF$FILTER)] <- "Tet-legs-14dpi_3"
-df_09_reference_VCF$FILTER[grepl("4-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_1"
-df_09_reference_VCF$FILTER[grepl("4-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_2"
-df_09_reference_VCF$FILTER[grepl("4-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-4dpi_3"
-df_09_reference_VCF$FILTER[grepl("7-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_1"
-df_09_reference_VCF$FILTER[grepl("7-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_2"
-df_09_reference_VCF$FILTER[grepl("7-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-7dpi_3"
-df_09_reference_VCF$FILTER[grepl("dup-14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1_dup"
-df_09_reference_VCF$FILTER[grepl("14-1-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_1"
-df_09_reference_VCF$FILTER[grepl("dup-14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2_dup"
-df_09_reference_VCF$FILTER[grepl("14-2-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_2"
-df_09_reference_VCF$FILTER[grepl("dup-14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3_dup"
-df_09_reference_VCF$FILTER[grepl("14-3-tet-body",df_09_reference_VCF$FILTER)] <- "Tet-body-14dpi_3"
-df_09_reference_VCF$FILTER[grepl("7-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_1"
-df_09_reference_VCF$FILTER[grepl("7-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_2"
-df_09_reference_VCF$FILTER[grepl("7-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-7dpi_3"
-df_09_reference_VCF$FILTER[grepl("14-1-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_1"
-df_09_reference_VCF$FILTER[grepl("14-2-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_2"
-df_09_reference_VCF$FILTER[grepl("14-3-wmel-body",df_09_reference_VCF$FILTER)] <- "wmel-body-14dpi_3"
-df_09_reference_VCF$FILTER[grepl("7-1-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs_7dpi_1"
-df_09_reference_VCF$FILTER[grepl("14-2-wmel-legs",df_09_reference_VCF$FILTER)] <- "wmel-legs_14dpi_2"
-df_09_reference_VCF_PC <- df_09_reference_VCF[grepl("PC",df_09_reference_VCF$FILTER),]
-df_09_reference_VCF_ZIKV <- df_09_reference_VCF[grepl("ZIKV",df_09_reference_VCF$FILTER),]
-df_09_reference_VCF <- df_09_reference_VCF[!grepl("PC",df_09_reference_VCF$FILTER),]
-df_09_reference_VCF <- df_09_reference_VCF[!grepl("ZIKV",df_09_reference_VCF$FILTER),]
-df_09_reference_VCF <- separate(df_09_reference_VCF, "FILTER", c("1","2","3"), sep="-")
-df_09_reference_VCF <- separate(df_09_reference_VCF, "3", c("3","4"), sep="_")
-df_09_reference_VCF$`3` <- as.integer(gsub("dpi", "", df_09_reference_VCF$`3`))
-
-## groups
-df_09_consensus_VCF$group_location <- paste(df_09_consensus_VCF$`1`, 
-                                            df_09_consensus_VCF$`2`, sep = "_")
-df_09_consensus_VCF$group_location_dpi <- paste(df_09_consensus_VCF$`1`, 
-                                                df_09_consensus_VCF$`2`, 
-                                                df_09_consensus_VCF$`3`, 
-                                                sep = "_")
-df_09_reference_VCF$group_location <- paste(df_09_reference_VCF$`1`, 
-                                            df_09_reference_VCF$`2`, sep = "_")
-df_09_reference_VCF$group_location_dpi <- paste(df_09_reference_VCF$`1`, 
-                                                df_09_reference_VCF$`2`, 
-                                                df_09_reference_VCF$`3`, 
-                                                sep = "_")
-df_09_consensus_VCF$group_location <- as.factor(df_09_consensus_VCF$group_location)
-df_09_consensus_VCF$group_location_dpi <- as.factor(df_09_consensus_VCF$group_location_dpi)
-df_09_reference_VCF$group_location <- as.factor(df_09_reference_VCF$group_location)
-df_09_reference_VCF$group_location_dpi <- as.factor(df_09_reference_VCF$group_location_dpi)
-
-## snnpgenie
+## #### string matches snnpgenie ####
 df_12_snpgenie_sg_pr$file[grepl("7-2-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-7dpi_2"
 df_12_snpgenie_sg_pr$file[grepl("7-3-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-7dpi_3"
 df_12_snpgenie_sg_pr$file[grepl("14-1-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-14dpi_1"
@@ -715,29 +741,169 @@ ds_b_sg_pr$gld <- as.factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, ds_b_sg
 ds_b_sg_pr$dpi <- factor(ds_b_sg_pr$dpi, levels = c("4", "7", "14"))
 ds_b_sg_pr$g <- factor(ds_b_sg_pr$g, levels = c("pi", "piN", "piS", "piNpiS"))
 
-#### Plot ####
+#### Plot variants ####
 ## Variants across the genome
-plot1 <- ggplot(data = df_09_reference_VCF, aes(x = POS, y = AF, color = `3`)) + 
-  geom_point() + 
-  scale_y_continuous(n.breaks = 3) + 
-  scale_x_continuous(n.breaks = 5) + 
-  theme(legend.title = element_blank(), 
-        legend.key = element_blank(), 
-        legend.position = "none") +
-  facet_grid(rows = vars(group_location), cols = vars(`3`)) + 
-  axis_formatting + legend_formatting + background_formatting
-
-plot2 <- ggplot(data = df_09_consensus_VCF, aes(x = POS, y = AF, color = `3`)) + 
+plot_iSNVs <- ggplot(data = df_09_consensus_VCF, aes(x = POS, y = AF, color = Ann)) + 
   geom_point() + 
   scale_y_continuous(n.breaks = 2) + 
   scale_x_continuous(n.breaks = 5) + 
   theme(legend.title = element_blank(), 
         legend.key = element_blank(), 
         legend.position = "none") +
+  scale_color_manual(values = palette_muts) + 
   facet_grid(rows = vars(group_location), cols = vars(`3`)) + 
   axis_formatting + legend_formatting + background_formatting
 
-## snpgenie
+
+## iSNV frequency spectra
+# assign VCF to df_sub50AF
+df_sub50AF <- df_09_consensus_VCF[df_09_consensus_VCF$AF <= .5,] ## the .5 is redundant
+# add AF bins
+df_sub50AF$Bin[df_sub50AF$AF>0.0 & df_sub50AF$AF<=0.1] <- "1-10%"
+df_sub50AF$Bin[df_sub50AF$AF>0.1 & df_sub50AF$AF<=0.2] <- "10-20%"
+df_sub50AF$Bin[df_sub50AF$AF>0.2 & df_sub50AF$AF<=0.3] <- "20-30%"
+df_sub50AF$Bin[df_sub50AF$AF>0.3 & df_sub50AF$AF<=0.4] <- "30-40%"
+df_sub50AF$Bin[df_sub50AF$AF>0.4 & df_sub50AF$AF<=0.5] <- "40-50%"
+df_sub50AF <- df_sub50AF[df_sub50AF$Ann!="stop_lost&splice_region_variant",]
+
+g <- levels(df_sub50AF$group_location_dpi)
+df_sub50AF_backup <- df_sub50AF
+
+
+## start of 
+i_gld = "Tet_body_4"
+df_sub50AF <- df_sub50AF_backup[df_sub50AF_backup$group_location_dpi==i_gld,]
+df_sub50AF_md_n_SNVs_by_bin_and_mut <- as.data.frame(table(df_sub50AF$Bin,df_sub50AF$Ann))
+names(df_sub50AF_md_n_SNVs_by_bin_and_mut)[names(df_sub50AF_md_n_SNVs_by_bin_and_mut) == "Var1"] <- "Bins"
+names(df_sub50AF_md_n_SNVs_by_bin_and_mut)[names(df_sub50AF_md_n_SNVs_by_bin_and_mut) == "Var2"] <- "Mutation_type"
+names(df_sub50AF_md_n_SNVs_by_bin_and_mut)[names(df_sub50AF_md_n_SNVs_by_bin_and_mut) == "Freq"] <- "Count"
+# split df by Mutation_type
+list_mut_bins_prop <- split(df_sub50AF_md_n_SNVs_by_bin_and_mut, with(df_sub50AF_md_n_SNVs_by_bin_and_mut, Mutation_type, drop=T))
+## if missing a bin, add it in
+n <- length(list_mut_bins_prop)
+for (i in 1:n) {
+  if (length(list_mut_bins_prop[[i]]$Bins)<5) {
+    print("Missing a bin!")
+    bins <- c("1-10%", "10-20%", "20-30%", "30-40%", "40-50%")
+    missing_bin <- bins[which(bins %!in% list_mut_bins_prop[[i]]$Bins[1:length(list_mut_bins_prop[[i]]$Bins)])]
+    missing_row <- data.frame("Bins" = missing_bin, "Mutation_type" = list_mut_bins_prop[[i]]$Mutation_type[1], "Count" = 0)
+    list_mut_bins_prop[[i]] <- rbind(list_mut_bins_prop[[i]], missing_row)
+    list_mut_bins_prop[[i]] <- list_mut_bins_prop[[i]] %>% slice(match(bins, Bins))
+  }
+}
+# calculate proportional column
+n <- length(list_mut_bins_prop)
+for (i in 1:n) {
+  list_mut_bins_prop[[i]]$Prop[1] <- sum(list_mut_bins_prop[[i]][1,3]/sum(list_mut_bins_prop[[i]][,3]))
+  list_mut_bins_prop[[i]]$Prop[2] <- sum(list_mut_bins_prop[[i]][2,3]/sum(list_mut_bins_prop[[i]][,3]))
+  list_mut_bins_prop[[i]]$Prop[3] <- sum(list_mut_bins_prop[[i]][3,3]/sum(list_mut_bins_prop[[i]][,3]))
+  list_mut_bins_prop[[i]]$Prop[4] <- sum(list_mut_bins_prop[[i]][4,3]/sum(list_mut_bins_prop[[i]][,3]))
+  list_mut_bins_prop[[i]]$Prop[5] <- sum(list_mut_bins_prop[[i]][5,3]/sum(list_mut_bins_prop[[i]][,3]))
+}
+# list to df
+df_mut_bins_prop_all <- Reduce(full_join,list_mut_bins_prop)
+## only include some of the mutation types
+df_mut_bins_prop_S <- filter(df_mut_bins_prop_all, Mutation_type=="Synonymous")
+df_mut_bins_prop_NS <- filter(df_mut_bins_prop_all, Mutation_type=="Nonsynonymous")
+df_mut_bins_prop_Stop_g <- filter(df_mut_bins_prop_all, Mutation_type=="Stop gained")
+df_mut_bins_prop_noNeut <- rbind(df_mut_bins_prop_S, df_mut_bins_prop_NS, df_mut_bins_prop_Stop_g)
+df_mut_bins_prop_noNeut$gld <- i_gld
+temp <- df_mut_bins_prop_noNeut
+
+x <- function(i_gld) {
+  df_sub50AF <- df_sub50AF_backup[df_sub50AF_backup$group_location_dpi==i_gld,]
+  df_sub50AF_md_n_SNVs_by_bin_and_mut <- as.data.frame(table(df_sub50AF$Bin,df_sub50AF$Ann))
+  names(df_sub50AF_md_n_SNVs_by_bin_and_mut)[names(df_sub50AF_md_n_SNVs_by_bin_and_mut) == "Var1"] <- "Bins"
+  names(df_sub50AF_md_n_SNVs_by_bin_and_mut)[names(df_sub50AF_md_n_SNVs_by_bin_and_mut) == "Var2"] <- "Mutation_type"
+  names(df_sub50AF_md_n_SNVs_by_bin_and_mut)[names(df_sub50AF_md_n_SNVs_by_bin_and_mut) == "Freq"] <- "Count"
+  # split df by Mutation_type
+  list_mut_bins_prop <- split(df_sub50AF_md_n_SNVs_by_bin_and_mut, with(df_sub50AF_md_n_SNVs_by_bin_and_mut, Mutation_type, drop=T))
+  ## if missing a bin, add it in
+  n <- length(list_mut_bins_prop)
+  for (i in 1:n) {
+    if (length(list_mut_bins_prop[[i]]$Bins)<5) {
+      print("Missing a bin!")
+      bins <- c("1-10%", "10-20%", "20-30%", "30-40%", "40-50%")
+      missing_bin <- bins[which(bins %!in% list_mut_bins_prop[[i]]$Bins[1:length(list_mut_bins_prop[[i]]$Bins)])]
+      missing_row <- data.frame("Bins" = missing_bin, "Mutation_type" = list_mut_bins_prop[[i]]$Mutation_type[1], "Count" = 0)
+      list_mut_bins_prop[[i]] <- rbind(list_mut_bins_prop[[i]], missing_row)
+      list_mut_bins_prop[[i]] <- list_mut_bins_prop[[i]] %>% slice(match(bins, Bins))
+    }
+  }
+  # calculate proportional column
+  n <- length(list_mut_bins_prop)
+  for (i in 1:n) {
+    list_mut_bins_prop[[i]]$Prop[1] <- sum(list_mut_bins_prop[[i]][1,3]/sum(list_mut_bins_prop[[i]][,3]))
+    list_mut_bins_prop[[i]]$Prop[2] <- sum(list_mut_bins_prop[[i]][2,3]/sum(list_mut_bins_prop[[i]][,3]))
+    list_mut_bins_prop[[i]]$Prop[3] <- sum(list_mut_bins_prop[[i]][3,3]/sum(list_mut_bins_prop[[i]][,3]))
+    list_mut_bins_prop[[i]]$Prop[4] <- sum(list_mut_bins_prop[[i]][4,3]/sum(list_mut_bins_prop[[i]][,3]))
+    list_mut_bins_prop[[i]]$Prop[5] <- sum(list_mut_bins_prop[[i]][5,3]/sum(list_mut_bins_prop[[i]][,3]))
+  }
+  # list to df
+  df_mut_bins_prop_all <- Reduce(full_join,list_mut_bins_prop)
+  ## only include some of the mutation types
+  df_mut_bins_prop_S <- filter(df_mut_bins_prop_all, Mutation_type=="Synonymous")
+  df_mut_bins_prop_NS <- filter(df_mut_bins_prop_all, Mutation_type=="Nonsynonymous")
+  df_mut_bins_prop_Stop_g <- filter(df_mut_bins_prop_all, Mutation_type=="Stop gained")
+  df_mut_bins_prop_noNeut <- rbind(df_mut_bins_prop_S, df_mut_bins_prop_NS, df_mut_bins_prop_Stop_g)
+  df_mut_bins_prop_noNeut$gld <- i_gld
+  temp <- rbind(temp, df_mut_bins_prop_noNeut)
+  return(temp)
+}
+temp <- x("Tet_body_7")
+temp <- x("Tet_legs_14")
+temp <- x("Tet_legs_7")
+temp <- x("Tet_saliva_14")
+temp <- x("Tet_saliva_7")
+temp <- x("wmel_body_14")
+temp <- x("wmel_body_7")
+temp <- x("wmel_legs_14")
+temp <- x("wmel_legs_7")
+df_mut_bins_prop_noNeut <- temp
+
+## df for neutral expectation
+df_mut_bins_neutral <- data.frame("Bins" = c("1-10%", "10-20%", "20-30%", "30-40%", "40-50%"),
+                                  "Mutation_type" = c("Neutral expectation","Neutral expectation",
+                                                      "Neutral expectation","Neutral expectation",
+                                                      "Neutral expectation"),
+                                  "Count" = c(NA, NA, NA, NA, NA),
+                                  "Prop" = c(0.588592, 0.177184, 0.103646, 0.073538, 0.057040))
+
+## iSNV frequency spectrum
+# factor leving
+df_mut_bins_prop_noNeut$Mutation_type <- factor(df_mut_bins_prop_noNeut$Mutation_type, levels = c("Nonsynonymous", "Synonymous", "Stop gained"))
+df_mut_bins_prop_noNeut <- df_mut_bins_prop_noNeut[df_mut_bins_prop_noNeut$Mutation_type!="Stop gained",]
+df_mut_bins_prop_noNeut <- separate(df_mut_bins_prop_noNeut, "gld", c("group", "location", "dpi"), sep = "_")
+df_mut_bins_prop_noNeut$gl <- factor(paste(df_mut_bins_prop_noNeut$group, df_mut_bins_prop_noNeut$location, sep = "_"), 
+                                     levels = c("Tet_saliva", "Tet_body", "wmel_body", "Tet_legs", "wmel_legs"))
+df_mut_bins_prop_noNeut$gld <- paste(df_mut_bins_prop_noNeut$gl, df_mut_bins_prop_noNeut$dpi, sep = "_")
+df_mut_bins_prop_noNeut$d <- factor(paste(df_mut_bins_prop_noNeut$dpi), 
+                                    levels = c("4", "7", "14"))
+df_mut_bins_prop_noNeut$Mutation_type <- factor(paste(df_mut_bins_prop_noNeut$Mutation_type), 
+                                    levels = c("Nonsynonymous", "Synonymous"))
+
+plot_spec <- ggplot() + 
+  geom_bar(data = df_mut_bins_prop_noNeut, aes(x = Bins, y = Prop, fill = Mutation_type),
+           stat = "identity", position = position_dodge2()) +
+  geom_text(data = df_mut_bins_prop_noNeut, 
+            aes(x = Bins, y = Prop, group = Mutation_type, label = Count),
+            position=position_dodge2(0.9), vjust=-0.25, size = 1.5) + 
+  geom_point(data = df_mut_bins_neutral, aes(x = Bins, y = Prop)) + 
+  geom_line(data = df_mut_bins_neutral, aes(x = Bins, y = Prop, group = 1)) +
+  scale_fill_manual(values = palette_muts) + 
+  labs(x = "Within-host iSNV frequency bin", 
+       y = "Proportion of variants per mutation type") + 
+  scale_y_continuous(limits = c(0,1), n.breaks = 2) + 
+  theme(legend.title = element_blank(),
+        legend.key = element_blank(),
+        legend.position = "bottom") + 
+  facet_grid(rows = vars(gl), cols = vars(d)) + 
+  axis_formatting + 
+  legend_formatting + 
+  background_formatting
+
+
+#### Plot snpgenie ####
 #piN and piS
 w <- c(1,1)
 plot3 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piN" | ds_b_sg_pr$g =="piS",], 
@@ -830,10 +996,7 @@ plot7_8 <- plot_grid(plot7, plot8, rel_widths = w,
 
 plot_snpgenie <- plot_grid(plot3_4, plot5_6, plot7_8, ncol = 1)
 
-
-
-
-
+#### Plot diversity ####
 ## R cadm
 df_R_cadm$gld <- paste(df_R_cadm$group, df_R_cadm$sample_type, df_R_cadm$dpi, sep = "_")
 df_R_cadm$gld <- as.factor(df_R_cadm$gld)
@@ -997,4 +1160,14 @@ ggsave("Fig1_snpgenie.pdf", plot_snpgenie,
 #Fig2
 ggsave("Fig2_diversity.pdf", plot_R,
        width = 15, height = 5, 
+       units = "in", dpi = 320)
+#Fig3
+  ## barcodes on 2-barcode_freqs.R
+#Fig4
+ggsave("Fig4_iSNVs.pdf", plot_iSNVs,
+       width = 15, height = 5, 
+       units = "in", dpi = 320)
+#Fig5
+ggsave("Fig5_spectrum_facet.pdf", plot_spec,
+       width = 9, height = 9,
        units = "in", dpi = 320)

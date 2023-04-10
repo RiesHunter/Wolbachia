@@ -11,9 +11,3 @@ Study of Zika virus evolution under Wolbachia selective pressure
 - Calculate Pi, PiN/PiS, mutation frequency, Gini-Simpson, and Shannon Entropy for all samples
 - Compare metrics between Tet and Wmel over time
 - Investigate bottleneck sizes through barcode analyses
-
-## Deadlines
-- (2 Feb) Complete barcode frequencies and analyses
-- (3 Feb) Plot SNPGenie, iSNV, and diversity metric data
-- (6 Feb) Write conclusions and discuss with Tom
-- (10 Feb) Discuss conclusions with Matt
