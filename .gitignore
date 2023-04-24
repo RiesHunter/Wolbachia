@@ -1,7 +1,7 @@
 # private data directories
 data/reads
 manuscripts/
-figs/
+#figs/
 
 # R project files
 .Rproj.user
