@@ -645,7 +645,126 @@ df_barcode_freqs$group_location_dpi <- as.factor(df_barcode_freqs$group_location
 
 ## order
 df_barcode_freqs$`3` <- factor(df_barcode_freqs$`3`, levels = c("4", "7", "14", "Control"))
-df_barcode_freqs_max <- df_barcode_freqs %>% group_by(sample_name) %>% summarise(Value = max(freq))
+
+## calculate max bc freq for each sample
+df_barcode_freqs_max <- aggregate(freq ~ sample_name, data = df_barcode_freqs, max)
+df_barcode_freqs_max$Max <- df_barcode_freqs_max$freq
+df_barcode_freqs_max$freq <- NULL
+## calculate avg bc freq for each sample
+df_barcode_freqs_avg <- aggregate(freq ~ sample_name, data = df_barcode_freqs, mean)
+df_barcode_freqs_avg$Mean <- df_barcode_freqs_avg$freq
+df_barcode_freqs_avg$freq <- NULL
+## calculate median bc freq for each sample
+df_barcode_freqs_med <- aggregate(freq ~ sample_name, data = df_barcode_freqs, median)
+df_barcode_freqs_med$Median <- df_barcode_freqs_med$freq
+df_barcode_freqs_med$freq <- NULL
+## merge all calculations into df_barcode_calcs
+df_barcode_calcs <- merge(df_barcode_freqs_max, df_barcode_freqs_avg, by = "sample_name")
+df_barcode_calcs <- merge(df_barcode_calcs, df_barcode_freqs_med, by = "sample_name")
+## assign groups to sample_names
+df_barcode_calcs$ID[grepl("7-2-tet-saliva",df_barcode_calcs$sample_name)] <- "Tet-saliva-7dpi_2"
+df_barcode_calcs$ID[grepl("7-3-tet-saliva",df_barcode_calcs$sample_name)] <- "Tet-saliva-7dpi_3"
+df_barcode_calcs$ID[grepl("14-1-tet-saliva",df_barcode_calcs$sample_name)] <- "Tet-saliva-14dpi_1"
+df_barcode_calcs$ID[grepl("14-3-tet-saliva",df_barcode_calcs$sample_name)] <- "Tet-saliva-14dpi_3"
+df_barcode_calcs$ID[grepl("7-1-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-7dpi_1"
+df_barcode_calcs$ID[grepl("7-2-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-7dpi_2"
+df_barcode_calcs$ID[grepl("7-3-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-7dpi_3"
+df_barcode_calcs$ID[grepl("14-1-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-14dpi_1"
+df_barcode_calcs$ID[grepl("14-2-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-14dpi_2"
+df_barcode_calcs$ID[grepl("14-3-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-14dpi_3"
+df_barcode_calcs$ID[grepl("4-1-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-4dpi_1"
+df_barcode_calcs$ID[grepl("4-2-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-4dpi_2"
+df_barcode_calcs$ID[grepl("4-3-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-4dpi_3"
+df_barcode_calcs$ID[grepl("7-1-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-7dpi_1"
+df_barcode_calcs$ID[grepl("7-2-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-7dpi_2"
+df_barcode_calcs$ID[grepl("7-3-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-7dpi_3"
+df_barcode_calcs$ID[grepl("dup-14-1-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_1_dup"
+df_barcode_calcs$ID[grepl("14-1-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_1"
+df_barcode_calcs$ID[grepl("dup-14-2-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_2_dup"
+df_barcode_calcs$ID[grepl("14-2-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_2"
+df_barcode_calcs$ID[grepl("dup-14-3-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_3_dup"
+df_barcode_calcs$ID[grepl("14-3-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_3"
+df_barcode_calcs$ID[grepl("7-1-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-7dpi_1"
+df_barcode_calcs$ID[grepl("7-2-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-7dpi_2"
+df_barcode_calcs$ID[grepl("7-3-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-7dpi_3"
+df_barcode_calcs$ID[grepl("14-1-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-14dpi_1"
+df_barcode_calcs$ID[grepl("14-2-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-14dpi_2"
+df_barcode_calcs$ID[grepl("14-3-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-14dpi_3"
+df_barcode_calcs$ID[grepl("7-1-wmel-legs",df_barcode_calcs$sample_name)] <- "wmel-legs-7dpi_1"
+df_barcode_calcs$ID[grepl("14-2-wmel-legs",df_barcode_calcs$sample_name)] <- "wmel-legs-14dpi_2"
+df_barcode_calcs$ID[grepl("7-2-tet-saliva",df_barcode_calcs$sample_name)] <- "Tet-saliva-7dpi_2"
+df_barcode_calcs$ID[grepl("7-3-tet-saliva",df_barcode_calcs$sample_name)] <- "Tet-saliva-7dpi_3"
+df_barcode_calcs$ID[grepl("14-1-tet-saliva",df_barcode_calcs$sample_name)] <- "Tet-saliva-14dpi_1"
+df_barcode_calcs$ID[grepl("14-3-tet-saliva",df_barcode_calcs$sample_name)] <- "Tet-saliva-14dpi_3"
+df_barcode_calcs$ID[grepl("7-1-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-7dpi_1"
+df_barcode_calcs$ID[grepl("7-2-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-7dpi_2"
+df_barcode_calcs$ID[grepl("7-3-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-7dpi_3"
+df_barcode_calcs$ID[grepl("14-1-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-14dpi_1"
+df_barcode_calcs$ID[grepl("14-2-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-14dpi_2"
+df_barcode_calcs$ID[grepl("14-3-tet-legs",df_barcode_calcs$sample_name)] <- "Tet-legs-14dpi_3"
+df_barcode_calcs$ID[grepl("4-1-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-4dpi_1"
+df_barcode_calcs$ID[grepl("4-2-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-4dpi_2"
+df_barcode_calcs$ID[grepl("4-3-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-4dpi_3"
+df_barcode_calcs$ID[grepl("7-1-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-7dpi_1"
+df_barcode_calcs$ID[grepl("7-2-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-7dpi_2"
+df_barcode_calcs$ID[grepl("7-3-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-7dpi_3"
+df_barcode_calcs$ID[grepl("dup-14-1-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_1_dup"
+df_barcode_calcs$ID[grepl("14-1-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_1"
+df_barcode_calcs$ID[grepl("dup-14-2-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_2_dup"
+df_barcode_calcs$ID[grepl("14-2-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_2"
+df_barcode_calcs$ID[grepl("dup-14-3-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_3_dup"
+df_barcode_calcs$ID[grepl("14-3-tet-body",df_barcode_calcs$sample_name)] <- "Tet-body-14dpi_3"
+df_barcode_calcs$ID[grepl("7-1-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-7dpi_1"
+df_barcode_calcs$ID[grepl("7-2-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-7dpi_2"
+df_barcode_calcs$ID[grepl("7-3-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-7dpi_3"
+df_barcode_calcs$ID[grepl("14-1-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-14dpi_1"
+df_barcode_calcs$ID[grepl("14-2-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-14dpi_2"
+df_barcode_calcs$ID[grepl("14-3-wmel-body",df_barcode_calcs$sample_name)] <- "wmel-body-14dpi_3"
+df_barcode_calcs$ID[grepl("7-1-wmel-legs",df_barcode_calcs$sample_name)] <- "wmel-legs-7dpi_1"
+df_barcode_calcs$ID[grepl("14-2-wmel-legs",df_barcode_calcs$sample_name)] <- "wmel-legs-14dpi_2"
+## remove controls
+df_barcode_calcs_NC <- df_barcode_calcs[grepl("NC",df_barcode_calcs$sample_name),]
+df_barcode_calcs_PC <- df_barcode_calcs[grepl("PC",df_barcode_calcs$sample_name),]
+df_barcode_calcs_ZIKV <- df_barcode_calcs[grepl("ZIKV",df_barcode_calcs$sample_name),]
+df_barcode_calcs_mouse <- df_barcode_calcs[grepl("mouse",df_barcode_calcs$sample_name),]
+df_barcode_calcs <- df_barcode_calcs[!grepl("NC",df_barcode_calcs$sample_name),]
+df_barcode_calcs <- df_barcode_calcs[!grepl("PC",df_barcode_calcs$sample_name),]
+df_barcode_calcs <- df_barcode_calcs[!grepl("ZIKV",df_barcode_calcs$sample_name),]
+df_barcode_calcs <- df_barcode_calcs[!grepl("mouse",df_barcode_calcs$sample_name),]
+## separate cols
+df_barcode_calcs <- separate(df_barcode_calcs, "ID", c("1","2","3"), sep="-")
+df_barcode_calcs <- separate(df_barcode_calcs, "3", c("3","4"), sep="_")
+df_barcode_calcs$`3` <- as.integer(gsub("dpi", "", df_barcode_calcs$`3`))
+## bring controls back in
+df_barcode_calcs_PC$`1` <- "Control"
+df_barcode_calcs_mouse$`1` <- "Control"
+df_barcode_calcs_PC$`2` <- "PC"
+df_barcode_calcs_mouse$`2` <- "mouse"
+df_barcode_calcs_PC$`3` <- "Control"
+df_barcode_calcs_mouse$`3` <- "Control"
+df_barcode_calcs_PC$`4` <- "Control"
+df_barcode_calcs_mouse$`4` <- "Control"
+df_barcode_calcs_PC$ID <- NULL
+df_barcode_calcs_mouse$ID <- NULL
+df_barcode_calcs <- rbind(df_barcode_calcs, 
+                          df_barcode_calcs_PC,
+                          df_barcode_calcs_mouse)
+## groups
+df_barcode_calcs$group_location <- paste(df_barcode_calcs$`1`, 
+                                         df_barcode_calcs$`2`, sep = "_")
+df_barcode_calcs$group_location_dpi <- paste(df_barcode_calcs$`1`, 
+                                             df_barcode_calcs$`2`, 
+                                             df_barcode_calcs$`3`, 
+                                             sep = "_")
+df_barcode_calcs$group_location <- as.factor(df_barcode_calcs$group_location)
+df_barcode_calcs$group_location_dpi <- as.factor(df_barcode_calcs$group_location_dpi)
+
+
+## calculate max bc freq for each sample
+df_barcode_freqs_max <- aggregate(freq ~ sample_name, data = df_barcode_freqs, max)
+df_barcode_freqs_max$Value <- df_barcode_freqs_max$freq
+df_barcode_freqs_max$freq <- NULL
+# merge to main df
 df_barcode_freqs <- merge(df_barcode_freqs, df_barcode_freqs_max, by = "sample_name")
 df_barcode_freqs$max <- round(df_barcode_freqs$Value, 2)
 
@@ -687,8 +806,97 @@ plot_rel_prop <- plot_grid(NULL, p1,  p2,
                            NULL, p13, p14,
                            ncol = 3)
 
+df_barcode_calcs$gl <- factor(paste(df_barcode_calcs$`1`, df_barcode_calcs$`2`, sep = "_"), 
+                        levels = c("Tet_body", "Tet_legs", "Tet_saliva", "wmel_body", "wmel_legs", "Control_mouse", "Control_PC"))
+df_barcode_calcs$dpi <- factor(df_barcode_calcs$`3`, levels = c("4", "7", "14", "Control"))
+
+plot_bc_calcs_max <- ggplot(df_barcode_calcs, aes(color = dpi), group = dpi) +
+  geom_point(aes(x = gl, y = Max),
+             position = position_dodge(.75)) + 
+  geom_boxplot(aes(x = gl, y = Max),
+               position = position_dodge(.75)) + 
+  labs(x = "Group_location") + 
+  axis_formatting + legend_formatting + background_formatting + 
+  theme(axis.title.x = element_blank(), legend.position = "none")
+
+plot_bc_calcs_mean <- ggplot(df_barcode_calcs, aes(color = dpi), group = dpi) +
+  geom_point(aes(x = gl, y = Mean),
+             position = position_dodge(.75)) + 
+  geom_boxplot(aes(x = gl, y = Mean),
+               position = position_dodge(.75)) + 
+  labs(x = "Group_location") + 
+  axis_formatting + legend_formatting + background_formatting + 
+  theme(axis.title.x = element_blank(), legend.position = "none")
+
+plot_bc_calcs_median <- ggplot(df_barcode_calcs, aes(color = dpi), group = dpi) +
+  geom_point(aes(x = gl, y = Median),
+             position = position_dodge(.75)) + 
+  geom_boxplot(aes(x = gl, y = Median),
+               position = position_dodge(.75)) + 
+  labs(x = "Group_location") + 
+  axis_formatting + legend_formatting + background_formatting + 
+  theme(axis.title.x = element_blank(),
+        legend.position = "bottom", 
+        legend.key = element_blank(), 
+        legend.title = element_blank())
+
+plot_bc_stats <- plot_grid(plot_bc_calcs_max,
+                           plot_bc_calcs_mean,
+                           plot_bc_calcs_median,
+                           nrow = 3, rel_heights = c(1,1,1.3))
+
+
+### bc freqs hist
+df_barcode_freqs$gl <- factor(paste(df_barcode_freqs$`1`, df_barcode_freqs$`2`, sep = "_"), 
+                              levels = c("Tet_body", "Tet_legs", "Tet_saliva", "wmel_body", "wmel_legs", "Control_mouse", "Control_PC"))
+df_barcode_freqs$dpi <- factor(df_barcode_freqs$`3`, levels = c("4", "7", "14", "Control"))
+
+i=paste("Tet_body_14")
+plot_bc_spec <- function(i) {
+  plot <- ggplot(df_barcode_freqs[df_barcode_freqs$freq>0 & 
+                                    df_barcode_freqs$group_location_dpi==i,], 
+                 aes(x = freq, group = sample_name)) + 
+    geom_histogram(bins = 50, fill = "blue") + 
+    labs(y = "Number of observations", x = "Frequency of barcode", title = i) + 
+    axis_formatting + legend_formatting + background_formatting + 
+    theme(legend.position = "none") + facet_grid(rows = vars(sample_name))
+  return(plot)
+}
+
+Tet_body <- plot_grid(plot_bc_spec("Tet_body_4"),
+                      plot_bc_spec("Tet_body_7"),
+                      plot_bc_spec("Tet_body_14"),
+                      ncol = 3)
+Tet_legs <- plot_grid(NULL, 
+                      plot_bc_spec("Tet_legs_7"),
+                      plot_bc_spec("Tet_legs_14"),
+                      ncol = 3)
+Tet_saliva <- plot_grid(NULL, plot_bc_spec("Tet_saliva_7"),
+                        plot_bc_spec("Tet_saliva_14"),
+                        ncol = 3)
+wmel_body <- plot_grid(NULL, plot_bc_spec("wmel_body_7"),
+                       plot_bc_spec("wmel_body_14"),
+                       ncol = 3)
+wmel_legs <- plot_grid(NULL, plot_bc_spec("wmel_legs_7"),
+                       plot_bc_spec("wmel_legs_14"),
+                       ncol = 3)
+control <- plot_grid(NULL, NULL, plot_bc_spec("Control_mouse_Control"), ncol = 3)
+
+plot_bc_freq_spec <- plot_grid(Tet_body,
+                               Tet_legs,
+                               Tet_saliva,
+                               wmel_body,
+                               wmel_legs,
+                               control,
+                               ncol = 1,
+                               rel_heights = c(12,8,3,6,2,1))
+
+
+
+
+
 #### save ####
-setwd(dir_save)
+setwd(dir_save);dir()
 #Fig1
 ggsave("Fig3_barcodes.pdf", plot,
        width = 5, height = 5, 
@@ -698,4 +906,10 @@ ggsave("Fig3_barcodes_dot.pdf", plot1.1,
        units = "in", dpi = 320)
 ggsave("Fig3_barcodes_relprop.pdf", plot_rel_prop,
        width = 10, height = 5, 
+       units = "in", dpi = 320)
+ggsave("Fig4_barcodes_calcs.pdf", plot_bc_stats,
+       width = 5, height = 5, 
+       units = "in", dpi = 320)
+ggsave("Fig4_barcodes_freq_spec.pdf", plot_bc_freq_spec,
+       width = 20, height = 40, 
        units = "in", dpi = 320)

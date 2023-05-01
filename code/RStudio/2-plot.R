@@ -1,15 +1,5 @@
 ## Clear Global Environment
 rm(list = ls())
-#df_09_reference_VCF$group_location_dpi <- factor(df_09_reference_VCF$group_location_dpi,
-#                                                 levels = c("Control_mouse_Control",
-#                                                            "Control_PC_Control",
-#                                                            "Tet_saliva_7", "Tet_saliva_14",
-#                                                            "Tet_body_4", "Tet_body_7", "Tet_body_14",
-#                                                            "Tet_legs_7", "Tet_legs_14",
-#                                                            "wmel_body_7", "wmel_body_14",
-#                                                            "wmel_legs_7", "wmel_legs_14"))
-#ggplot(df_09_reference_VCF[df_09_reference_VCF$HGVS.p=="p.Pro1683Pro",], aes(x = group_location_dpi, y = AF)) + 
-#  geom_point() + theme_bw()
 
 #### Session prep ####
 ## Install packages and load libraries as required
@@ -133,10 +123,9 @@ palette_gl <- c("Tet_saliva" = "#a97cf7",
 
 #### Import and clean ####
 dir_09_consensus_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_consensus_VCF/fn_ann", sep="")
-dir_09_reference_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_reference_VCF/fn_ann", sep="")
+dir_09_reference_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_reference_VCF/no_BCs", sep="")
 dir_10_snpdat_TSV <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/10_snpdat_TSV", sep="")
 dir_10_snpdat_TXT <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/10_snpdat_TXT", sep="")
-dir_12_snpgenie <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/12_snpgenie", sep="")
 dir_14_R <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/14_R", sep="")
 dir_save <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/figs", sep="")
 
@@ -192,9 +181,9 @@ dir_save <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc
 
 #### dir_09_reference_VCF ####
 ## these are the vcfs from the samples relative to the reference
-setwd(dir_09_reference_VCF)
-vcf <- dir(pattern="_L001_fn_ann.vcf")
-names_trunc <- gsub("_L001_fn_ann.vcf","",vcf)
+setwd(dir_09_reference_VCF); dir()
+vcf <- dir(pattern="_L001_fn_ann_noBC.vcf")
+names_trunc <- gsub("_L001_fn_ann_noBC.vcf","",vcf)
 names_trunc <- gsub("09-reference_","",names_trunc)
 n <- length(vcf)
 list <- vector("list",n)
@@ -556,10 +545,10 @@ df_iSNV_enumeration$group_location_dpi <- as.factor(df_iSNV_enumeration$group_lo
 
 #### dir_12_snpgenie ####
 #codon_results
-setwd(paste(dir_12_snpgenie, "09_reference_VCF_snpgenie", "sample_files", sep = "/")); dir()
-sg_cr <- dir(pattern="_L001_sg_codon_results.txt")
-names_trunc <- gsub("_L001_sg_codon_results.txt","",sg_cr)
-names_trunc <- gsub("12-","",names_trunc)
+setwd(paste(dir_09_reference_VCF, "sample_files", sep = "/")); dir()
+sg_cr <- dir(pattern="_L001_fn_ann_noBC_sg_codon_results")
+names_trunc <- gsub("_L001_fn_ann_noBC_sg_codon_results","",sg_cr)
+names_trunc <- gsub("09-reference_","",names_trunc)
 n <- length(sg_cr)
 list <- vector("list",n)
 for (i in 1:n) {
@@ -569,16 +558,16 @@ for (i in 1:n) {
 df_12_snpgenie_sg_cr <- Reduce(full_join,list)
 df_12_snpgenie_sg_cr$sample <- df_12_snpgenie_sg_cr$file
 df_12_snpgenie_sg_cr$sample <- gsub("./09-reference_", "", df_12_snpgenie_sg_cr$sample)
-df_12_snpgenie_sg_cr$sample <- gsub("_L001.vcf", "", df_12_snpgenie_sg_cr$sample)
+df_12_snpgenie_sg_cr$sample <- gsub("_L001_fn_ann_noBC.vcf", "", df_12_snpgenie_sg_cr$sample)
 df_12_snpgenie_sg_cr <- separate(df_12_snpgenie_sg_cr, "sample", c("sample","S"), sep="_S")
 #df_12_snpgenie_sg_cr$pi <- df_12_snpgenie_sg_cr$piN + df_12_snpgenie_sg_cr$piS
 #df_12_snpgenie_sg_cr$piNpiS <- df_12_snpgenie_sg_cr$piN / df_12_snpgenie_sg_cr$piS
 #df_12_snpgenie_sg_cr$piNminuspiS <- df_12_snpgenie_sg_cr$piN - df_12_snpgenie_sg_cr$piS
 
 #product_results
-sg_pr <- dir(pattern="_L001_sg_product_results.txt")
-names_trunc <- gsub("_L001_sg_product_results.txt","",sg_pr)
-names_trunc <- gsub("12-","",names_trunc)
+sg_pr <- dir(pattern="_L001_fn_ann_noBC_sg_product_results.txt")
+names_trunc <- gsub("_L001_fn_ann_noBC_sg_product_results.txt","",sg_pr)
+names_trunc <- gsub("09-reference_","",names_trunc)
 n <- length(sg_pr)
 list <- vector("list",n)
 for (i in 1:n) {
@@ -591,16 +580,16 @@ for (i in 1:n) {
 df_12_snpgenie_sg_pr <- Reduce(full_join,list)
 df_12_snpgenie_sg_pr$sample <- df_12_snpgenie_sg_pr$file
 df_12_snpgenie_sg_pr$sample <- gsub("./09-reference_", "", df_12_snpgenie_sg_pr$sample)
-df_12_snpgenie_sg_pr$sample <- gsub("_L001.vcf", "", df_12_snpgenie_sg_pr$sample)
+df_12_snpgenie_sg_pr$sample <- gsub("_L001_fn_ann_noBC.vcf", "", df_12_snpgenie_sg_pr$sample)
 df_12_snpgenie_sg_pr <- separate(df_12_snpgenie_sg_pr, "sample", c("sample","S"), sep="_S")
 df_12_snpgenie_sg_pr$pi <- df_12_snpgenie_sg_pr$piN + df_12_snpgenie_sg_pr$piS
 df_12_snpgenie_sg_pr$piNpiS <- df_12_snpgenie_sg_pr$piN / df_12_snpgenie_sg_pr$piS
 df_12_snpgenie_sg_pr$piNminuspiS <- df_12_snpgenie_sg_pr$piN - df_12_snpgenie_sg_pr$piS
 
 #sliding_window
-sg_sw <- dir(pattern="_L001_sg_sliding_window.txt")
-names_trunc <- gsub("_L001_sg_sliding_window.txt","",sg_sw)
-names_trunc <- gsub("12-","",names_trunc)
+sg_sw <- dir(pattern="_L001_fn_ann_noBC_sg_sliding_window.txt")
+names_trunc <- gsub("_L001_fn_ann_noBC_sg_sliding_window.txt","",sg_sw)
+names_trunc <- gsub("09-reference_","",names_trunc)
 n <- length(sg_sw)
 list <- vector("list",n)
 for (i in 1:n) {
@@ -612,7 +601,7 @@ sg_sw$pi <- sg_sw$piN + sg_sw$piS
 
 sg_sw$sample <- sg_sw$file
 sg_sw$sample <- gsub("./09-reference_", "", sg_sw$sample)
-sg_sw$sample <- gsub("_L001.vcf", "", sg_sw$sample)
+sg_sw$sample <- gsub("_L001_fn_ann_noBC.vcf", "", sg_sw$sample)
 sg_sw <- separate(sg_sw, "sample", c("sample","S"), sep="_S")
 
 #### prelim sw plots ####
@@ -933,7 +922,7 @@ ds_b_sg_pr$g <- factor(ds_b_sg_pr$g, levels = c("pi", "piN", "piS", "piNpiS", "p
 #### Plot variants ####
 ## Variant enumeration
 df_iSNV_enumeration$gl <- factor(paste(df_iSNV_enumeration$`1`, df_iSNV_enumeration$`2`, sep = "_"), 
-                                 levels = c("Tet_saliva", "Tet_body", "Tet_legs", "wmel_body", "wmel_legs"))
+                                 levels = c("Tet_body", "Tet_legs", "Tet_saliva", "wmel_body", "wmel_legs"))
 table(df_iSNV_enumeration$gl)
 df_iSNV_enumeration$dpi <- factor(df_iSNV_enumeration$`3`, 
                                  levels = c(4, 7, 14))
@@ -954,7 +943,7 @@ ds_iSNV_enumeration_Total$group_location_dpi <- paste(ds_iSNV_enumeration_Total$
 ds_iSNV_enumeration_Total$group_location_dpi <- as.factor(ds_iSNV_enumeration_Total$group_location_dpi)
 ds_iSNV_enumeration_Total$group_location <- as.factor(ds_iSNV_enumeration_Total$group_location)
 ds_iSNV_enumeration_Total$group_location <- factor(ds_iSNV_enumeration_Total$group_location,
-                                                   levels = c("Tet_saliva", "Tet_body", "Tet_legs", "wmel_body", "wmel_legs", "Control_mouse", "Control_PC"))
+                                                   levels = c("Tet_body", "Tet_legs", "Tet_saliva", "wmel_body", "wmel_legs", "Control_mouse", "Control_PC"))
 ds_iSNV_enumeration_Total <- separate(ds_iSNV_enumeration_Total, "group_location_dpi", c("g", "l", "dpi"))
 ds_iSNV_enumeration_Total$dpi <- factor(ds_iSNV_enumeration_Total$dpi, 
                                       levels = c("4", "7", "14"))
@@ -974,7 +963,7 @@ ds_iSNV_enumeration_TAF$group_location_dpi <- paste(ds_iSNV_enumeration_TAF$grou
                                                       sep = "_")
 ds_iSNV_enumeration_TAF$group_location_dpi <- as.factor(ds_iSNV_enumeration_TAF$group_location_dpi)
 ds_iSNV_enumeration_TAF$group_location <- factor(ds_iSNV_enumeration_TAF$group_location,
-                                                 levels = c("Tet_saliva", "Tet_body", "Tet_legs", "wmel_body", "wmel_legs", "Control_mouse", "Control_PC"))
+                                                 levels = c("Tet_body", "Tet_legs", "Tet_saliva", "wmel_body", "wmel_legs", "Control_mouse", "Control_PC"))
 ds_iSNV_enumeration_TAF <- separate(ds_iSNV_enumeration_TAF, "group_location_dpi", c("g", "l", "dpi"))
 ds_iSNV_enumeration_TAF$dpi <- factor(ds_iSNV_enumeration_TAF$dpi, 
                                         levels = c("4", "7", "14"))
@@ -1059,7 +1048,7 @@ df_09_reference_VCF_control$gl <- factor(paste(df_09_reference_VCF_control$`1`, 
                                          levels = c("Control_mouse", "Control_PC"))
 df_09_reference_VCF <- df_09_reference_VCF[df_09_reference_VCF$`3`!="Control",]
 df_09_reference_VCF$gl <- factor(paste(df_09_reference_VCF$`1`, df_09_reference_VCF$`2`, sep = "_"), 
-                                 levels = c("Tet_saliva", "Tet_body", "wmel_body", "Tet_legs", "wmel_legs"))
+                                 levels = c("Tet_body", "wmel_body", "Tet_legs", "wmel_legs", "Tet_saliva"))
 #table(df_09_reference_VCF$gl)
 #n_samples <- as.data.frame(df_09_reference_VCF
 #                       [!duplicated(df_09_reference_VCF$FILTER),] 
@@ -1217,8 +1206,8 @@ temp <- x("wmel_body_14")
 temp <- x("wmel_body_7")
 temp <- x("wmel_legs_14")
 temp <- x("wmel_legs_7")
-temp <- x("Control_PC_Control")
-temp <- x("Control_mouse_Control")
+#temp <- x("Control_PC_Control")
+#temp <- x("Control_mouse_Control")
 df_mut_bins_prop_noNeut <- temp
 
 ## df for neutral expectation
@@ -1235,10 +1224,10 @@ df_mut_bins_prop_noNeut$Mutation_type <- factor(df_mut_bins_prop_noNeut$Mutation
 df_mut_bins_prop_noNeut <- df_mut_bins_prop_noNeut[df_mut_bins_prop_noNeut$Mutation_type!="Stop gained",]
 df_mut_bins_prop_noNeut <- separate(df_mut_bins_prop_noNeut, "gld", c("group", "location", "dpi"), sep = "_")
 df_mut_bins_prop_noNeut$gl <- factor(paste(df_mut_bins_prop_noNeut$group, df_mut_bins_prop_noNeut$location, sep = "_"), 
-                                     levels = c("Tet_saliva", "Tet_body", "wmel_body", "Tet_legs", "wmel_legs", "Control_PC", "Control_mouse"))
+                                     levels = c("Tet_body", "wmel_body", "Tet_legs", "wmel_legs", "Tet_saliva"))
 df_mut_bins_prop_noNeut$gld <- paste(df_mut_bins_prop_noNeut$gl, df_mut_bins_prop_noNeut$dpi, sep = "_")
 df_mut_bins_prop_noNeut$d <- factor(paste(df_mut_bins_prop_noNeut$dpi), 
-                                    levels = c("4", "7", "14", "Control"))
+                                    levels = c("4", "7", "14"))
 df_mut_bins_prop_noNeut$Mutation_type <- factor(paste(df_mut_bins_prop_noNeut$Mutation_type), 
                                     levels = c("Nonsynonymous", "Synonymous"))
 
@@ -1266,6 +1255,8 @@ plot_spec <- ggplot() +
 #### Plot snpgenie ####
 #piN and piS
 w <- c(1, .1, .8, .1)
+ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
+                        levels = c("Tet_body", "Tet_legs", "Tet_saliva", "wmel_body", "wmel_legs"))
 plot3 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piN" | ds_b_sg_pr$g =="piS",], 
                 aes(x = gl, y = V1, group = gld, color = g)) + 
   geom_point(position = position_dodge(.9)) + 
@@ -1299,8 +1290,6 @@ plot3.1 <- ggplot(data = ds_b_sg_pr_control[ds_b_sg_pr_control$g=="piN" | ds_b_s
         legend.key = element_blank(), 
         legend.position = "none") +  
   axis_formatting + legend_formatting + background_formatting
-ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
-                        levels = c("Tet_saliva", "Tet_body", "Tet_legs","wmel_body", "wmel_legs"))
 plot4 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piN" | ds_b_sg_pr$g =="piS",], 
                 aes(x = dpi, y = V1, group = gld, color = g)) + 
   geom_point(position = position_dodge(.9)) + 
@@ -1339,7 +1328,7 @@ plot3_4 <- plot_grid(plot3, plot3.1, plot4, plot4.1, rel_widths = w,
 
 # pi
 ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
-                        levels = c("Tet_saliva", "Tet_body", "wmel_body", "Tet_legs", "wmel_legs"))
+                        levels = c("Tet_body", "Tet_legs", "Tet_saliva", "wmel_body", "wmel_legs"))
 plot5 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="pi",], 
                 aes(x = gl, y = V1, group = gld, color = dpi)) + 
   geom_point(position = position_dodge(.9)) + 
@@ -1370,8 +1359,6 @@ plot5.1 <- ggplot(data = ds_b_sg_pr_control[ds_b_sg_pr_control$g=="pi",],
         legend.key = element_blank(), 
         legend.position = "none") +  
   axis_formatting + legend_formatting + background_formatting
-ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
-                        levels = c("Tet_saliva", "Tet_body", "Tet_legs","wmel_body", "wmel_legs"))
 plot6 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="pi",], 
                 aes(x = dpi, y = V1, group = gld, color = g)) + 
   geom_point(position = position_dodge(.9)) + 
@@ -1406,7 +1393,7 @@ plot5_6 <- plot_grid(plot5, plot5.1, plot6, plot6.1, rel_widths = w,
 
 # piNpiS
 ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
-                        levels = c("Tet_saliva", "Tet_body", "wmel_body", "Tet_legs", "wmel_legs"))
+                        levels = c("Tet_body", "Tet_legs", "Tet_saliva", "wmel_body", "wmel_legs"))
 plot7 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piNpiS",], 
                 aes(x = gl, y = V1, group = gld, color = dpi)) + 
   geom_point(position = position_dodge(.9)) + 
@@ -1438,8 +1425,6 @@ plot7.1 <- ggplot(data = ds_b_sg_pr_control[ds_b_sg_pr_control$g=="piNpiS",],
         legend.key = element_blank(), 
         legend.position = "none") +  
   axis_formatting + legend_formatting + background_formatting
-ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
-                        levels = c("Tet_saliva", "Tet_body", "Tet_legs","wmel_body", "wmel_legs"))
 plot8 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piNpiS",], 
                 aes(x = dpi, y = V1, group = gld, color = g)) + 
   geom_point(position = position_dodge(.9)) + 
@@ -1476,7 +1461,7 @@ plot7_8 <- plot_grid(plot7, plot7.1, plot8, plot8.1, rel_widths = w,
 
 # piNminuspiS
 ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
-                        levels = c("Tet_saliva", "Tet_body", "wmel_body", "Tet_legs", "wmel_legs"))
+                        levels = c("Tet_body", "Tet_legs", "Tet_saliva", "wmel_body", "wmel_legs"))
 plot9 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piNminuspiS",], 
                 aes(x = gl, y = V1, group = gld, color = dpi)) + 
   geom_point(position = position_dodge(.9)) + 
@@ -1508,9 +1493,6 @@ plot9.1 <- ggplot(data = ds_b_sg_pr_control[ds_b_sg_pr_control$g=="piNminuspiS",
         legend.key = element_blank(), 
         legend.position = "none") +  
   axis_formatting + legend_formatting + background_formatting
-
-ds_b_sg_pr$gl <- factor(paste(ds_b_sg_pr$group, ds_b_sg_pr$location, sep = "_"), 
-                        levels = c("Tet_saliva", "Tet_body", "Tet_legs","wmel_body", "wmel_legs"))
 plot10 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piNminuspiS",], 
                 aes(x = dpi, y = V1, group = gld, color = g)) + 
   geom_point(position = position_dodge(.9)) + 
@@ -1725,3 +1707,14 @@ ggsave("Fig5_spectrum_facet.pdf", plot_spec,
 ggsave("Fig5_divergence.pdf", plot_divergence_counts,
        width = 5, height = 4,
        units = "in", dpi = 320)
+#### Misc ####
+#df_09_reference_VCF$group_location_dpi <- factor(df_09_reference_VCF$group_location_dpi,
+#                                                 levels = c("Control_mouse_Control",
+#                                                            "Control_PC_Control",
+#                                                            "Tet_saliva_7", "Tet_saliva_14",
+#                                                            "Tet_body_4", "Tet_body_7", "Tet_body_14",
+#                                                            "Tet_legs_7", "Tet_legs_14",
+#                                                            "wmel_body_7", "wmel_body_14",
+#                                                            "wmel_legs_7", "wmel_legs_14"))
+#ggplot(df_09_reference_VCF[df_09_reference_VCF$HGVS.p=="p.Pro1683Pro",], aes(x = group_location_dpi, y = AF)) + 
+#  geom_point() + theme_bw()
