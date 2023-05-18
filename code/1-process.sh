@@ -6,10 +6,13 @@ echo ""; echo "-------------------- Starting... --------------------"
 
 ### ---------------------------------------------------------------------------------------------------- ###
 ## Parameters
-workingdir="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/reads/data/run"
-reference="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/refseqs/PRVABC59.fasta"
-gtf="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/refseqs/PRVABC59.gtf"
-bed="/Users/rieshunter/Documents/bioinformatics/Wolbachia/data/refseqs/PRVABC59.bed"
+#workingdir="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/Kasen_reads"
+workingdir="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/test"
+codedir="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/code"
+reference="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/refseqs/PRVABC59.fasta"
+gtf="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/refseqs/PRVABC59.gtf"
+bed="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/refseqs/PRVABC59.bed"
+
 ## Versions
 bwa &> out_bwa; head -3 out_bwa | tail -2 > _versions.txt; rm out_bwa; echo "" >> _versions.txt
 samtools --version &> out_sam; head -2 out_sam >> _versions.txt; rm out_sam; echo "" >> _versions.txt
@@ -20,7 +23,7 @@ perl --version &> out_perl; head -2 out_perl | tail -1 >> _versions.txt; rm out_
 perl $HOME/Documents/GitHub/snpdat/SNPdat_v1.0.5.pl -v &> out_snpdat; head -2 out_snpdat | tail -1 >> _versions.txt; rm out_snpdat; echo "" >> _versions.txt
 bcftools version &> out_bcf; head -1 out_bcf >> _versions.txt; rm out_bcf; echo "" >> _versions.txt
 snpgenie.pl --version &> out_sg; head -1 out_sg >> _versions.txt; rm out_sg; echo "" >> _versions.txt
-pysamstats --help &> out_pys; tail -2 out_pys | head -1 >> _versions.txt; rm out_pys; echo "" >> _versions.txt
+#pysamstats --help &> out_pys; tail -2 out_pys | head -1 >> _versions.txt; rm out_pys; echo "" >> _versions.txt
 Rscript --version &> out_Rs; head -1 out_Rs >> _versions.txt; rm out_Rs; echo "" >> _versions.txt
 source ~/miniconda3/bin/activate; conda activate pysam; conda info >> _versions.txt; echo "" >> _versions.txt
 
@@ -40,8 +43,8 @@ touch _stderr.txt
 for pairs in *_R1_001.fastq.gz
 do
 # Index
-bwa index ${reference} 2>>_stderr.txt
-samtools faidx ${reference} 2>>_stderr.txt
+bwa index "${reference}" 2>>_stderr.txt
+samtools faidx "${reference}" 2>>_stderr.txt
 
 # Names
 sample=${pairs%%_R1_001.fastq.gz}
@@ -142,17 +145,17 @@ samtools sort \
 
 # Call variants with lofreq
 lofreq call \
-  -l ${bed} \
+  -l "${bed}" \
   -q 30 -Q 30 -C 300 \
-  -f ${reference} \
+  -f "${reference}" \
   -o 09-reference_${sample}.vcf \
   ./08-sorted_norm_${sample}.bam 2>>_stderr.txt
 
 # Use SNPdat to annotate variants
 perl $HOME/Documents/GitHub/snpdat/SNPdat_v1.0.5.pl \
   -i 09-reference_${sample}.vcf \
-  -g ${gtf} \
-  -f ${reference} \
+  -g "${gtf}" \
+  -f "${reference}" \
   -s 10-snpdat_${sample}.txt \
   -o 10-snpdat_${sample}.tsv 2>>_stderr.txt
 
@@ -161,49 +164,49 @@ bgzip ./09-reference_${sample}.vcf 2>>_stderr.txt
 tabix -p vcf ./09-reference_${sample}.vcf.gz 2>>_stderr.txt
 
 # Extract consensus sequence for population
-cat ${reference} | bcftools consensus -e "INFO/AF<0.50" ./09-reference_${sample}.vcf.gz > 11-consensus_${sample}.fasta 2>>_stderr.txt
+#cat ${reference} | bcftools consensus -e "INFO/AF<0.50" ./09-reference_${sample}.vcf.gz > 11-consensus_${sample}.fasta 2>>_stderr.txt
 
 # Call variants relative to consensus with lofreq
-lofreq call \
-  -l ${bed} \
-  -q 30 -Q 30 -C 300 \
-  -f ./11-consensus_${sample}.fasta \
-  -o 09-consensus_${sample}.vcf \
-  ./08-sorted_norm_${sample}.bam 2>>_stderr.txt
+#lofreq call \
+#  -l ${bed} \
+#  -q 30 -Q 30 -C 300 \
+#  -f ./11-consensus_${sample}.fasta \
+#  -o 09-consensus_${sample}.vcf \
+#  ./08-sorted_norm_${sample}.bam 2>>_stderr.txt
 
 # Use SNPgenie to characterize variants and calculate pi
-snpgenie.pl \
-  --vcfformat=2 \
-  --snpreport=./09-consensus_${sample}.vcf \
-  --fastafile=./11-consensus_${sample}.fasta \
-  --gtffile=${gtf} \
-  --slidingwindow=30 2>>_stderr.txt
-chmod 755 SNPGenie_Results/product_results.txt
-mv SNPGenie_Results/product_results.txt ./12-${sample}_sg_product_results.txt
-mv SNPGenie_Results/codon_results.txt ./12-${sample}_sg_codon_results.txt
-mv SNPGenie_Results/sliding_window_length* ./12-${sample}_sg_sliding_window.txt
-rm -r SNPGenie_Results
+#snpgenie.pl \
+#  --vcfformat=2 \
+#  --snpreport=./09-consensus_${sample}.vcf \
+#  --fastafile=./11-consensus_${sample}.fasta \
+#  --gtffile=${gtf} \
+#  --slidingwindow=30 2>>_stderr.txt
+#chmod 755 SNPGenie_Results/product_results.txt
+#mv SNPGenie_Results/product_results.txt ./12-${sample}_sg_product_results.txt
+#mv SNPGenie_Results/codon_results.txt ./12-${sample}_sg_codon_results.txt
+#mv SNPGenie_Results/sliding_window_length* ./12-${sample}_sg_sliding_window.txt
+#rm -r SNPGenie_Results
 
 # Generate nucleotide counts per position
 samtools index -b ./08-sorted_norm_${sample}.bam 2>>_stderr.txt
 
-pysamstats -f 11-consensus_${sample}.fasta \
-  -t variation \
-  -D 1000000 \
-  --format csv \
-  --output 13-ntcounts_consensus_${sample}.csv \
-  ./08-sorted_norm_${sample}.bam 2>>_stderr.txt
-pysamstats -f ${reference} \
-  -t variation \
-  -D 1000000 \
-  --format csv \
-  --output 13-ntcounts_reference_${sample}.csv \
-  ./08-sorted_norm_${sample}.bam 2>>_stderr.txt
+#pysamstats -f 11-consensus_${sample}.fasta \
+#  -t variation \
+#  -D 1000000 \
+#  --format csv \
+#  --output 13-ntcounts_consensus_${sample}.csv \
+#  ./08-sorted_norm_${sample}.bam 2>>_stderr.txt
+#pysamstats -f "${reference}" \
+#  -t variation \
+#  -D 1000000 \
+#  --format csv \
+#  --output 13-ntcounts_reference_${sample}.csv \
+#  ./08-sorted_norm_${sample}.bam 2>>_stderr.txt
 
 # Calculate diversity metrics with R
-Rscript /Users/rieshunter/Documents/bioinformatics/Wolbachia/code/1-process.R \
-  ${workingdir} \
-  ${sample} 2>>_stderr.txt
+#Rscript "${codedir}"/RStudio/1-process.R \
+#  "${workingdir}" \
+#  ${sample} 2>>_stderr.txt
 
 # Clean
 rm *-ptqtatlf_*.fastq *-qtatlf_*.fastq *-cat*.fastq *norm*.bam *-unmerged*.fastq *-merged*.fastq *-at*.fastq *.bai *.fai *.tbi
@@ -215,25 +218,25 @@ done
 ## Directories
 printf "00_raw files\t\t"; ls *.fastq.gz | wc -l
 printf "06_norm files\t\t"; ls 06-*.fastq | wc -l
-printf "09_consensus_VCF files\t"; ls 09-con* | wc -l
+#printf "09_consensus_VCF files\t"; ls 09-con* | wc -l
 printf "09_reference_VCF files\t"; ls 09-ref* | wc -l
 printf "10_snpdat_TSV files\t"; ls 10-*.tsv | wc -l
 printf "10_snpdat_TXT files\t"; ls 10-*.txt | wc -l
-printf "11_consensus_FASTA files"; ls 11-*.fasta | wc -l
-printf "12_snpgenie files\t"; ls 12-* | wc -l
+#printf "11_consensus_FASTA files"; ls 11-*.fasta | wc -l
+#printf "12_snpgenie files\t"; ls 12-* | wc -l
 printf "13_ntcounts files\t"; ls 13-* | wc -l
-printf "14_R files\t\t"; ls R_* | wc -l
+#printf "14_R files\t\t"; ls R_* | wc -l
 
 mkdir 00_raw; mv *.fastq.gz 00_raw
 mkdir 06_norm; mv 06-* 06_norm
-mkdir 09_consensus_VCF; mv 09-con* 09_consensus_VCF
+#mkdir 09_consensus_VCF; mv 09-con* 09_consensus_VCF
 mkdir 09_reference_VCF; mv 09-ref* 09_reference_VCF
 mkdir 10_snpdat_TSV; mv 10-*tsv 10_snpdat_TSV
 mkdir 10_snpdat_TXT; mv 10-*txt 10_snpdat_TXT
-mkdir 11_consensus_FASTA; mv 11-* 11_consensus_FASTA
-mkdir 12_snpgenie; mv 12-* 12_snpgenie
+#mkdir 11_consensus_FASTA; mv 11-* 11_consensus_FASTA
+#mkdir 12_snpgenie; mv 12-* 12_snpgenie
 mkdir 13_ntcounts; mv 13-* 13_ntcounts
-mkdir 14_R; mv R_* 14_R
+#mkdir 14_R; mv R_* 14_R
 
 ### ---------------------------------------------------------------------------------------------------- ###
 ## Time end          
