@@ -5,7 +5,7 @@ echo ""; echo "-------------------- Starting barcode analyses... ---------------
 
 ### ---------------------------------------------------------------------------------------------------- ###
 ## Parameters
-workingdir="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run"
+workingdir="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/test_r2"
 reference="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/refseqs/PRVABC59.fasta"
 
 ## Index
@@ -21,7 +21,7 @@ ls -lh
 ### ---------------------------------------------------------------------------------------------------- ###
 ## Calculate number of pairs
 declare -i x=0
-for pairs in "$workingdir"/00_raw/*_L001_R1_001.fastq.gz
+for pairs in "$workingdir"/00_raw/*_L001_R2_001.fastq.gz
 do
 x=$(( x + 1 ))
 done
@@ -30,18 +30,17 @@ declare -i n=0
 ### ---------------------------------------------------------------------------------------------------- ###
 ## For-loop
 cd "$workingdir"/00_raw
-for pairs in *_L001_R1_001.fastq.gz
+for pairs in *_L001_R2_001.fastq.gz
 do
 cd "$workingdir"
 
 # Names
-sample=${pairs%%_L001_R1_001.fastq.gz}
+sample=${pairs%%_L001_R2_001.fastq.gz}
 n=$(( n + 1 ))
 echo "[$n/$x]: ${sample}"
 
 ## Align processed paired-end reads to reference with default settings
-bwa mem -t 4 "$reference" ./06_norm/06-norm_${sample}_L001_r1.fastq \
-  ./06_norm/06-norm_${sample}_L001_r2.fastq > ./06_norm/relaxed_norm_${sample}.bam  2>>_stderr.txt
+bwa mem -t 4 "$reference" ./06_norm/06-norm_${sample}_L001_r2.fastq > ./06_norm/relaxed_norm_${sample}.bam  2>>_stderr.txt
 
 ### sort and index alignment
 samtools sort ./06_norm/relaxed_norm_${sample}.bam > ./06_norm/sorted_relaxed_norm_${sample}.bam 2>>_stderr.txt
