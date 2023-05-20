@@ -33,7 +33,7 @@ if(!require(bayesboot)){
 
 #### Directories ####
 dir_09_consensus_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_consensus_VCF/fn_ann", sep="")
-dir_09_reference_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_reference_VCF/no_BCs", sep="")
+dir_09_reference_VCF <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_reference_VCF/noBC_noConsensusiSNVs", sep="")
 dir_10_snpdat_TSV <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/10_snpdat_TSV", sep="")
 dir_10_snpdat_TXT <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/10_snpdat_TXT", sep="")
 dir_14_R <- paste("/Users/rieshunter/Library/CloudStorage/GoogleDrive-hries@wisc.edu/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/14_R", sep="")
@@ -494,10 +494,10 @@ df_barcode_freqs$sample_name <- factor(df_barcode_freqs$sample_name,
 
 #### iSNVs: Import, clean ####
 ## these are the vcfs from the samples relative to the reference
-setwd(paste(dir_09_reference_VCF, "fn_ann_vcf_no_bc", sep = "/")); getwd(); head(dir())
+setwd(paste(dir_09_reference_VCF, "vcf", sep = "/")); getwd(); head(dir())
 
-vcf <- dir(pattern="_L001_fn_ann_noBC.vcf")
-names_trunc <- gsub("_L001_fn_ann_noBC.vcf","",vcf)
+vcf <- dir(pattern="_L001_fn_ann_cleaned.vcf")
+names_trunc <- gsub("_L001_fn_ann_cleaned.vcf","",vcf)
 names_trunc <- gsub("09-reference_","",names_trunc)
 n <- length(vcf)
 list <- vector("list",n)
@@ -784,9 +784,9 @@ df_iSNV_enumeration$group_location_dpi <- as.factor(df_iSNV_enumeration$group_lo
 
 #### SNPGenie: Import, clean ####
 #codon_results
-setwd(paste(dir_09_reference_VCF, "sample_files", sep = "/")); getwd(); head(dir())
-sg_cr <- dir(pattern="_L001_fn_ann_noBC_sg_codon_results")
-names_trunc <- gsub("_L001_fn_ann_noBC_sg_codon_results","",sg_cr)
+setwd(paste(dir_09_reference_VCF, "snpgenie/sample_files", sep = "/")); getwd(); head(dir())
+sg_cr <- dir(pattern="_L001_fn_ann_cleaned_sg_codon_results")
+names_trunc <- gsub("_L001_fn_ann_cleaned_sg_codon_results","",sg_cr)
 names_trunc <- gsub("09-reference_","",names_trunc)
 n <- length(sg_cr)
 list <- vector("list",n)
@@ -797,15 +797,15 @@ for (i in 1:n) {
 df_12_snpgenie_sg_cr <- Reduce(full_join,list)
 df_12_snpgenie_sg_cr$sample <- df_12_snpgenie_sg_cr$file
 df_12_snpgenie_sg_cr$sample <- gsub("./09-reference_", "", df_12_snpgenie_sg_cr$sample)
-df_12_snpgenie_sg_cr$sample <- gsub("_L001_fn_ann_noBC.vcf", "", df_12_snpgenie_sg_cr$sample)
+df_12_snpgenie_sg_cr$sample <- gsub("_L001_fn_ann_cleaned.vcf", "", df_12_snpgenie_sg_cr$sample)
 df_12_snpgenie_sg_cr <- separate(df_12_snpgenie_sg_cr, "sample", c("sample","S"), sep="_S")
 #df_12_snpgenie_sg_cr$pi <- df_12_snpgenie_sg_cr$piN + df_12_snpgenie_sg_cr$piS
 #df_12_snpgenie_sg_cr$piNpiS <- df_12_snpgenie_sg_cr$piN / df_12_snpgenie_sg_cr$piS
 #df_12_snpgenie_sg_cr$piNminuspiS <- df_12_snpgenie_sg_cr$piN - df_12_snpgenie_sg_cr$piS
 
 #product_results
-sg_pr <- dir(pattern="_L001_fn_ann_noBC_sg_product_results.txt")
-names_trunc <- gsub("_L001_fn_ann_noBC_sg_product_results.txt","",sg_pr)
+sg_pr <- dir(pattern="_L001_fn_ann_cleaned_sg_product_results.txt")
+names_trunc <- gsub("_L001_fn_ann_cleaned_sg_product_results.txt","",sg_pr)
 names_trunc <- gsub("09-reference_","",names_trunc)
 n <- length(sg_pr)
 list <- vector("list",n)
@@ -819,15 +819,15 @@ for (i in 1:n) {
 df_12_snpgenie_sg_pr <- Reduce(full_join,list)
 df_12_snpgenie_sg_pr$sample <- df_12_snpgenie_sg_pr$file
 df_12_snpgenie_sg_pr$sample <- gsub("./09-reference_", "", df_12_snpgenie_sg_pr$sample)
-df_12_snpgenie_sg_pr$sample <- gsub("_L001_fn_ann_noBC.vcf", "", df_12_snpgenie_sg_pr$sample)
+df_12_snpgenie_sg_pr$sample <- gsub("_L001_fn_ann_cleaned.vcf", "", df_12_snpgenie_sg_pr$sample)
 df_12_snpgenie_sg_pr <- separate(df_12_snpgenie_sg_pr, "sample", c("sample","S"), sep="_S")
 df_12_snpgenie_sg_pr$pi <- df_12_snpgenie_sg_pr$piN + df_12_snpgenie_sg_pr$piS
 df_12_snpgenie_sg_pr$piNpiS <- df_12_snpgenie_sg_pr$piN / df_12_snpgenie_sg_pr$piS
 df_12_snpgenie_sg_pr$piNminuspiS <- df_12_snpgenie_sg_pr$piN - df_12_snpgenie_sg_pr$piS
 
 #sliding_window
-sg_sw <- dir(pattern="_L001_fn_ann_noBC_sg_sliding_window.txt")
-names_trunc <- gsub("_L001_fn_ann_noBC_sg_sliding_window.txt","",sg_sw)
+sg_sw <- dir(pattern="_L001_fn_ann_cleaned_sg_sliding_window.txt")
+names_trunc <- gsub("_L001_fn_ann_cleaned_sg_sliding_window.txt","",sg_sw)
 names_trunc <- gsub("09-reference_","",names_trunc)
 n <- length(sg_sw)
 list <- vector("list",n)
@@ -840,8 +840,135 @@ sg_sw$pi <- sg_sw$piN + sg_sw$piS
 
 sg_sw$sample <- sg_sw$file
 sg_sw$sample <- gsub("./09-reference_", "", sg_sw$sample)
-sg_sw$sample <- gsub("_L001_fn_ann_noBC.vcf", "", sg_sw$sample)
+sg_sw$sample <- gsub("_L001_fn_ann_cleaned.vcf", "", sg_sw$sample)
 sg_sw <- separate(sg_sw, "sample", c("sample","S"), sep="_S")
+
+#### SNPGenie: Sliding window ####
+sg_sw$ID[grepl("7-2-tet-saliva",sg_sw$file)] <- "Tet-saliva-7dpi_2"
+sg_sw$ID[grepl("7-3-tet-saliva",sg_sw$file)] <- "Tet-saliva-7dpi_3"
+sg_sw$ID[grepl("14-1-tet-saliva",sg_sw$file)] <- "Tet-saliva-14dpi_1"
+sg_sw$ID[grepl("14-3-tet-saliva",sg_sw$file)] <- "Tet-saliva-14dpi_3"
+sg_sw$ID[grepl("7-1-tet-legs",sg_sw$file)] <- "Tet-legs-7dpi_1"
+sg_sw$ID[grepl("7-2-tet-legs",sg_sw$file)] <- "Tet-legs-7dpi_2"
+sg_sw$ID[grepl("7-3-tet-legs",sg_sw$file)] <- "Tet-legs-7dpi_3"
+sg_sw$ID[grepl("14-1-tet-legs",sg_sw$file)] <- "Tet-legs-14dpi_1"
+sg_sw$ID[grepl("14-2-tet-legs",sg_sw$file)] <- "Tet-legs-14dpi_2"
+sg_sw$ID[grepl("14-3-tet-legs",sg_sw$file)] <- "Tet-legs-14dpi_3"
+sg_sw$ID[grepl("4-1-tet-body",sg_sw$file)] <- "Tet-body-4dpi_1"
+sg_sw$ID[grepl("4-2-tet-body",sg_sw$file)] <- "Tet-body-4dpi_2"
+sg_sw$ID[grepl("4-3-tet-body",sg_sw$file)] <- "Tet-body-4dpi_3"
+sg_sw$ID[grepl("7-1-tet-body",sg_sw$file)] <- "Tet-body-7dpi_1"
+sg_sw$ID[grepl("7-2-tet-body",sg_sw$file)] <- "Tet-body-7dpi_2"
+sg_sw$ID[grepl("7-3-tet-body",sg_sw$file)] <- "Tet-body-7dpi_3"
+sg_sw$ID[grepl("dup-14-1-tet-body",sg_sw$file)] <- "Tet-body-14dpi_1_dup"
+sg_sw$ID[grepl("14-1-tet-body",sg_sw$file)] <- "Tet-body-14dpi_1"
+sg_sw$ID[grepl("dup-14-2-tet-body",sg_sw$file)] <- "Tet-body-14dpi_2_dup"
+sg_sw$ID[grepl("14-2-tet-body",sg_sw$file)] <- "Tet-body-14dpi_2"
+sg_sw$ID[grepl("dup-14-3-tet-body",sg_sw$file)] <- "Tet-body-14dpi_3_dup"
+sg_sw$ID[grepl("14-3-tet-body",sg_sw$file)] <- "Tet-body-14dpi_3"
+sg_sw$ID[grepl("7-1-wmel-body",sg_sw$file)] <- "wmel-body-7dpi_1"
+sg_sw$ID[grepl("7-2-wmel-body",sg_sw$file)] <- "wmel-body-7dpi_2"
+sg_sw$ID[grepl("7-3-wmel-body",sg_sw$file)] <- "wmel-body-7dpi_3"
+sg_sw$ID[grepl("14-1-wmel-body",sg_sw$file)] <- "wmel-body-14dpi_1"
+sg_sw$ID[grepl("14-2-wmel-body",sg_sw$file)] <- "wmel-body-14dpi_2"
+sg_sw$ID[grepl("14-3-wmel-body",sg_sw$file)] <- "wmel-body-14dpi_3"
+sg_sw$ID[grepl("7-1-wmel-legs",sg_sw$file)] <- "wmel-legs-7dpi_1"
+sg_sw$ID[grepl("14-2-wmel-legs",sg_sw$file)] <- "wmel-legs-14dpi_2"
+sg_sw$ID[grepl("7-2-tet-saliva",sg_sw$file)] <- "Tet-saliva-7dpi_2"
+sg_sw$ID[grepl("7-3-tet-saliva",sg_sw$file)] <- "Tet-saliva-7dpi_3"
+sg_sw$ID[grepl("14-1-tet-saliva",sg_sw$file)] <- "Tet-saliva-14dpi_1"
+sg_sw$ID[grepl("14-3-tet-saliva",sg_sw$file)] <- "Tet-saliva-14dpi_3"
+sg_sw$ID[grepl("7-1-tet-legs",sg_sw$file)] <- "Tet-legs-7dpi_1"
+sg_sw$ID[grepl("7-2-tet-legs",sg_sw$file)] <- "Tet-legs-7dpi_2"
+sg_sw$ID[grepl("7-3-tet-legs",sg_sw$file)] <- "Tet-legs-7dpi_3"
+sg_sw$ID[grepl("14-1-tet-legs",sg_sw$file)] <- "Tet-legs-14dpi_1"
+sg_sw$ID[grepl("14-2-tet-legs",sg_sw$file)] <- "Tet-legs-14dpi_2"
+sg_sw$ID[grepl("14-3-tet-legs",sg_sw$file)] <- "Tet-legs-14dpi_3"
+sg_sw$ID[grepl("4-1-tet-body",sg_sw$file)] <- "Tet-body-4dpi_1"
+sg_sw$ID[grepl("4-2-tet-body",sg_sw$file)] <- "Tet-body-4dpi_2"
+sg_sw$ID[grepl("4-3-tet-body",sg_sw$file)] <- "Tet-body-4dpi_3"
+sg_sw$ID[grepl("7-1-tet-body",sg_sw$file)] <- "Tet-body-7dpi_1"
+sg_sw$ID[grepl("7-2-tet-body",sg_sw$file)] <- "Tet-body-7dpi_2"
+sg_sw$ID[grepl("7-3-tet-body",sg_sw$file)] <- "Tet-body-7dpi_3"
+sg_sw$ID[grepl("dup-14-1-tet-body",sg_sw$file)] <- "Tet-body-14dpi_1_dup"
+sg_sw$ID[grepl("14-1-tet-body",sg_sw$file)] <- "Tet-body-14dpi_1"
+sg_sw$ID[grepl("dup-14-2-tet-body",sg_sw$file)] <- "Tet-body-14dpi_2_dup"
+sg_sw$ID[grepl("14-2-tet-body",sg_sw$file)] <- "Tet-body-14dpi_2"
+sg_sw$ID[grepl("dup-14-3-tet-body",sg_sw$file)] <- "Tet-body-14dpi_3_dup"
+sg_sw$ID[grepl("14-3-tet-body",sg_sw$file)] <- "Tet-body-14dpi_3"
+sg_sw$ID[grepl("7-1-wmel-body",sg_sw$file)] <- "wmel-body-7dpi_1"
+sg_sw$ID[grepl("7-2-wmel-body",sg_sw$file)] <- "wmel-body-7dpi_2"
+sg_sw$ID[grepl("7-3-wmel-body",sg_sw$file)] <- "wmel-body-7dpi_3"
+sg_sw$ID[grepl("14-1-wmel-body",sg_sw$file)] <- "wmel-body-14dpi_1"
+sg_sw$ID[grepl("14-2-wmel-body",sg_sw$file)] <- "wmel-body-14dpi_2"
+sg_sw$ID[grepl("14-3-wmel-body",sg_sw$file)] <- "wmel-body-14dpi_3"
+sg_sw$ID[grepl("7-1-wmel-legs",sg_sw$file)] <- "wmel-legs-7dpi_1"
+sg_sw$ID[grepl("14-2-wmel-legs",sg_sw$file)] <- "wmel-legs-14dpi_2"
+## remove controls
+sg_sw_NC <- sg_sw[grepl("NC",sg_sw$file),]
+sg_sw_PC <- sg_sw[grepl("PC",sg_sw$file),]
+sg_sw_ZIKV <- sg_sw[grepl("ZIKV",sg_sw$file),]
+sg_sw_mouse <- sg_sw[grepl("mouse",sg_sw$file),]
+sg_sw <- sg_sw[!grepl("NC",sg_sw$file),]
+sg_sw <- sg_sw[!grepl("PC",sg_sw$file),]
+sg_sw <- sg_sw[!grepl("ZIKV",sg_sw$file),]
+sg_sw <- sg_sw[!grepl("mouse",sg_sw$file),]
+## separate cols
+sg_sw <- separate(sg_sw, "ID", c("1","2","3"), sep="-")
+sg_sw <- separate(sg_sw, "3", c("3","4"), sep="_")
+sg_sw$`3` <- as.integer(gsub("dpi", "", sg_sw$`3`))
+
+## bring controls back in
+sg_sw_NC$`1` <- "Control"
+sg_sw_PC$`1` <- "Control"
+sg_sw_mouse$`1` <- "Control"
+sg_sw_NC$`2` <- "NC"
+sg_sw_PC$`2` <- "PC"
+sg_sw_mouse$`2` <- "mouse"
+sg_sw_NC$`3` <- "Control"
+sg_sw_PC$`3` <- "Control"
+sg_sw_mouse$`3` <- "Control"
+sg_sw_NC$`4` <- "Control"
+sg_sw_PC$`4` <- "Control"
+sg_sw_mouse$`4` <- "Control"
+sg_sw_NC$ID <- NULL
+sg_sw_PC$ID <- NULL
+sg_sw_mouse$ID <- NULL
+
+sg_sw <- rbind(sg_sw,
+                              sg_sw_NC,
+                              sg_sw_PC,
+                              sg_sw_mouse)
+
+## groups
+sg_sw$group_location <- paste(sg_sw$`1`, 
+                                             sg_sw$`2`, sep = "_")
+sg_sw$group_location_dpi <- paste(sg_sw$`1`, 
+                                                 sg_sw$`2`, 
+                                                 sg_sw$`3`, 
+                                                 sep = "_")
+sg_sw$group_location <- as.factor(sg_sw$group_location)
+sg_sw$group_location_dpi <- as.factor(sg_sw$group_location_dpi)
+
+## transform to calculate piN_minus_piS
+sg_sw <- transform(sg_sw, "piN_minus_piS" = piN - piS)
+
+## preliminary plot
+i=paste("wmel_body_14")
+plot <- ggplot(sg_sw[sg_sw$group_location_dpi==i,], 
+               aes(x = first_site), 
+               group = file, 
+               color = group_location_dpi) + 
+  geom_line(aes(y = piN), color = "blue", alpha = .5) + 
+  geom_line(aes(y = piS), color = "orange", alpha = .5) + 
+  theme_bw() + 
+  lims(y = c(0, 0.02)) + 
+  labs(x = "site", y = "Nucleotide diversity",
+       title = i) + 
+  facet_grid(rows = vars(as.factor(file)))
+plot
+levels(as.factor(sg_sw$group_location_dpi))
+
 
 #### SNPGenie: Group ####
 df_12_snpgenie_sg_pr$ID[grepl("7-2-tet-saliva",df_12_snpgenie_sg_pr$file)] <- "Tet-saliva-7dpi_2"
@@ -1116,7 +1243,7 @@ plot9.1 <- ggplot(data = ds_b_sg_pr_control[ds_b_sg_pr_control$g=="piNminuspiS",
         legend.position = "none") +  
   axis_formatting + legend_formatting + background_formatting
 plot10 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piNminuspiS",], 
-                 aes(x = dpi, y = V1, group = gld, color = g)) + 
+                 aes(x = dpi, y = V1, group = gld)) + 
   geom_point(position = position_dodge(.9)) + 
   geom_errorbar(aes(x = dpi, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
                 width = .2, position = position_dodge(.9)) + 
@@ -1130,7 +1257,7 @@ plot10 <- ggplot(data = ds_b_sg_pr[ds_b_sg_pr$g=="piNminuspiS",],
         legend.position = "none") +  
   axis_formatting + legend_formatting + background_formatting
 plot10.1 <- ggplot(data = ds_b_sg_pr_control[ds_b_sg_pr_control$g=="piNminuspiS",], 
-                   aes(x = location, y = V1, group = gl, color = g)) + 
+                   aes(x = location, y = V1, group = gl)) + 
   geom_point(position = position_dodge(.9)) + 
   geom_errorbar(aes(x = location, y = V1, ymin = V1 - sd, ymax = V1 + sd), 
                 width = .2, position = position_dodge(.9)) + 
@@ -1148,8 +1275,8 @@ plot10.1 <- ggplot(data = ds_b_sg_pr_control[ds_b_sg_pr_control$g=="piNminuspiS"
   axis_formatting + legend_formatting + background_formatting
 
 #### Plot: Barcode richness ####
-plot_barcodes <- ggplot(ds_treatment_bc_totals[ds_treatment_bc_totals$dpi!="Control",], 
-                        aes(color = dpi), group = dpi) + 
+plot_barcodes <- ggplot(ds_treatment_bc_totals[ds_treatment_bc_totals$dpi!="Control",],
+                        group = dpi) + 
   geom_point(aes(x = dpi, y = V1),
              position = position_dodge(.75)) + 
   geom_errorbar(data = ds_treatment_bc_totals[ds_treatment_bc_totals$dpi!="Control",], 
@@ -1160,7 +1287,7 @@ plot_barcodes <- ggplot(ds_treatment_bc_totals[ds_treatment_bc_totals$dpi!="Cont
   #geom_text(aes(x = dpi, label = round(V1,0), y = V1), 
   #          vjust = -5, size = 1.5,
   #          position = position_dodge(.75)) +
-  scale_color_manual(values = palette_dpi) + 
+  #scale_color_manual(values = palette_dpi) + 
   scale_y_log10(limits = c(1,1000)) + 
   labs(x = "", y = "Barcode species richness") + 
   annotation_logticks(sides="l") + 
@@ -1172,7 +1299,7 @@ plot_barcodes <- ggplot(ds_treatment_bc_totals[ds_treatment_bc_totals$dpi!="Cont
   axis_formatting + legend_formatting + background_formatting
 
 plot_barcodes_controls <- ggplot(ds_treatment_bc_totals[ds_treatment_bc_totals$dpi=="Control",], 
-                        aes(color = dpi), group = dpi) + 
+                                 group = dpi) + 
   geom_point(aes(x = location, y = V1),
              position = position_dodge(.75)) + 
   geom_errorbar(data = ds_treatment_bc_totals[ds_treatment_bc_totals$dpi=="Control",], 
@@ -1204,7 +1331,7 @@ w <- c(1, .1,
 Fig1 <- plot_grid(plot4, plot4.1,
                   plot10, plot10.1, 
                   plot_barcodes, plot_barcodes_controls, 
-                  nrow = 3, rel_widths = w, align = "lr")
+                  nrow = 3, rel_widths = w, align = "r")
 
 #### Plot: iSNVs across the genome ####
 ## Variants across the genome
@@ -1216,13 +1343,12 @@ df_09_reference_VCF$gl <- factor(paste(df_09_reference_VCF$`1`, df_09_reference_
                                  levels = c("Tet_body", "wmel_body", "Tet_legs", "wmel_legs", "Tet_saliva"))
 
 df_09_reference_VCF$`3` <- factor(df_09_reference_VCF$`3`, levels = c("4", "7", "14"))
-plot_iSNVs <- ggplot(data = df_09_reference_VCF[
-  df_09_reference_VCF$HGVS.p!="p.Pro1683Pro" & 
-    df_09_reference_VCF$POS > 4030 | df_09_reference_VCF$POS < 4007,], 
+
+plot_iSNVs <- ggplot(data = df_09_reference_VCF, 
   aes(x = POS, y = AF, color = Ann)) + 
   geom_point() + 
   labs(x = "", y = "Allele Frequency") +
-  scale_y_continuous(n.breaks = 2) + 
+  scale_y_continuous(n.breaks = 2, limits = c(0,1)) + 
   scale_x_continuous(n.breaks = 5) + 
   theme(legend.title = element_blank(), 
         legend.key = element_blank(), 
@@ -1231,17 +1357,15 @@ plot_iSNVs <- ggplot(data = df_09_reference_VCF[
   facet_grid(rows = vars(gl), cols = vars(`3`)) + 
   axis_formatting + legend_formatting + background_formatting
 
-plot_iSNVs_control <- ggplot(data = df_09_reference_VCF_control[
-  df_09_reference_VCF_control$HGVS.p!="p.Pro1683Pro" & 
-    df_09_reference_VCF_control$POS > 4030 | df_09_reference_VCF_control$POS < 4007,], 
+plot_iSNVs_control <- ggplot(data = df_09_reference_VCF_control, 
   aes(x = POS, y = AF, color = Ann)) + 
   geom_point() + 
   labs(x = "Genome position", y = "Allele Frequency") +
-  scale_y_continuous(n.breaks = 2) + 
+  scale_y_continuous(n.breaks = 2, limits = c(0,1)) + 
   scale_x_continuous(n.breaks = 5) + 
   theme(legend.title = element_blank(), 
         legend.key = element_blank(), 
-        legend.position = "bottom") +
+        legend.position = "right") +
   scale_color_manual(values = palette_muts) + 
   facet_grid(cols = vars(`2`)) + 
   axis_formatting + legend_formatting + background_formatting
@@ -1294,12 +1418,14 @@ ds_iSNV_enumeration_TAF$group_location <- factor(ds_iSNV_enumeration_TAF$group_l
 ds_iSNV_enumeration_TAF <- separate(ds_iSNV_enumeration_TAF, "group_location_dpi", c("g", "l", "dpi"))
 ds_iSNV_enumeration_TAF$dpi <- factor(ds_iSNV_enumeration_TAF$dpi, 
                                       levels = c("4", "7", "14"))
+ds_iSNV_enumeration_TAF$group_location <- gsub("","",ds_iSNV_enumeration_TAF$group_location)
 
 ## Total 
-plot_total_iSNVs <- ggplot(ds_iSNV_enumeration_Total, aes(color = dpi), group = dpi) + 
-  geom_point(aes(x = group_location, y = Total),
+plot_total_iSNVs <- ggplot(ds_iSNV_enumeration_Total[
+  ds_iSNV_enumeration_Total$g!="Control",], group = dpi) + 
+  geom_point(aes(x = dpi, y = Total),
              position = position_dodge(.75)) + 
-  geom_errorbar(aes(x = group_location, y = Total, 
+  geom_errorbar(aes(x = dpi, y = Total, 
                     ymin = Total - sd, 
                     ymax = Total + sd), 
                 width = .15, position = position_dodge(.75)) +
@@ -1307,76 +1433,82 @@ plot_total_iSNVs <- ggplot(ds_iSNV_enumeration_Total, aes(color = dpi), group = 
     legend.key = element_blank(), 
     legend.position = "right") +
   scale_y_continuous(limits = c(0,30)) + 
+  facet_grid(cols = vars(group_location)) +
+  labs(x = "", y = "Number of iSNVs") + 
+  axis_formatting + legend_formatting + background_formatting
+plot_total_iSNVs_controls <- ggplot(ds_iSNV_enumeration_Total[
+  ds_iSNV_enumeration_Total$g=="Control",], group = l) + 
+  geom_point(aes(x = l, y = Total),
+             position = position_dodge(.75)) + 
+  geom_errorbar(aes(x = l, y = Total, 
+                    ymin = Total - sd, 
+                    ymax = Total + sd), 
+                width = .15, position = position_dodge(.75)) +
+  theme(#legend.title = element_blank(), 
+    axis.text.y.left = element_blank(),
+    axis.ticks.y.left = element_blank(),
+    axis.title.y.left = element_blank(),
+    legend.key = element_blank(), 
+    legend.position = "none") +
+  scale_y_continuous(limits = c(0,30)) + 
+  facet_grid(cols = vars(g)) +
   labs(x = "", y = "Number of iSNVs") + 
   axis_formatting + legend_formatting + background_formatting
 ## TAF
-plot_divergence <- ggplot(ds_iSNV_enumeration_TAF, aes(color = dpi), group = dpi) + 
-  geom_point(aes(x = group_location, y = Total_AF),
+plot_divergence <- ggplot(ds_iSNV_enumeration_TAF[
+  ds_iSNV_enumeration_TAF$g!="Control",], group = dpi) + 
+  geom_point(aes(x = dpi, y = Total_AF),
              position = position_dodge(.75)) + 
-  geom_errorbar(aes(x = group_location, y = Total_AF, 
+  geom_errorbar(aes(x = dpi, y = Total_AF, 
                     ymin = Total_AF - sd, 
                     ymax = Total_AF + sd), 
                 width = .15, position = position_dodge(.75)) +
   theme(#legend.title = element_blank(), 
     legend.key = element_blank(), 
     legend.position = "right") +
-  scale_y_continuous(limits = c(0,6.5)) + 
+  scale_y_continuous(limits = c(-0.02,2)) + 
   labs(x = "", y = "Divergence") + 
+  facet_grid(cols = vars(group_location)) +
   axis_formatting + legend_formatting + background_formatting
-
-# Total iSNVs
-plot_enumeration_Total_1 <- ggplot(df_iSNV_enumeration, aes(color = gl), group = dpi) + 
-  geom_violin(aes(x = dpi, y = Total),
-              position = position_dodge(.75)) + 
-  scale_color_manual(values = palette_gl) + 
-  theme(legend.title = element_blank(), 
-        legend.key = element_blank(), 
-        legend.position = "right") +
-  labs(x = "", y = "Number of iSNVs") + 
-  axis_formatting + legend_formatting + background_formatting
-plot_enumeration_Total_2 <- ggplot(df_iSNV_enumeration, aes(color = dpi), group = dpi) + 
-  geom_violin(aes(x = gl, y = Total),
-              position = position_dodge(.75)) + 
-  theme(legend.title = element_blank(), 
-        legend.key = element_blank(), 
-        legend.position = "right") +
-  labs(x = "", y = "Number of iSNVs") + 
-  axis_formatting + legend_formatting + background_formatting
-# Total AF
-plot_enumeration_TAF_1 <- ggplot(df_iSNV_enumeration, aes(color = gl), group = dpi) + 
-  geom_violin(aes(x = dpi, y = Total_AF),
-              position = position_dodge(.75)) + 
-  scale_color_manual(values = palette_gl) + 
-  theme(legend.title = element_blank(), 
-        legend.key = element_blank(), 
-        legend.position = "right") +
+plot_divergence_controls <- ggplot(ds_iSNV_enumeration_TAF[
+  ds_iSNV_enumeration_TAF$g=="Control",], group = l) + 
+  geom_point(aes(x = l, y = Total_AF),
+             position = position_dodge(.75)) + 
+  geom_errorbar(aes(x = l, y = Total_AF, 
+                    ymin = Total_AF - sd, 
+                    ymax = Total_AF + sd), 
+                width = .15, position = position_dodge(.75)) +
+  theme(#legend.title = element_blank(), 
+    axis.text.y.left = element_blank(),
+    axis.ticks.y.left = element_blank(),
+    axis.title.y.left = element_blank(),
+    legend.key = element_blank(), 
+    legend.position = "none") +
+  scale_y_continuous(limits = c(-0.02,2)) + 
   labs(x = "", y = "Divergence") + 
+  facet_grid(cols = vars(g)) +
   axis_formatting + legend_formatting + background_formatting
-plot_enumeration_TAF_2 <- ggplot(df_iSNV_enumeration, aes(color = dpi), group = dpi) + 
-  geom_violin(aes(x = gl, y = Total_AF),
-              position = position_dodge(.75)) + 
-  theme(legend.title = element_blank(), 
-        legend.key = element_blank(), 
-        legend.position = "right") +
-  labs(x = "", y = "Divergence") + 
-  axis_formatting + legend_formatting + background_formatting
-
-plots_enumeration_1 <- plot_grid(plot_enumeration_TAF_1, plot_enumeration_Total_1,
-                                 nrow = 2, ncol = 1, rel_widths = c(1,1.5))
-plots_enumeration_2 <- plot_grid(plot_enumeration_TAF_2, plot_enumeration_Total_2,
-                                 nrow = 2, ncol = 1, rel_widths = c(1,1.5))
 
 #### Supp 1: iSNVs across genome and enumerated ####
 plot_iSNVs_all <- plot_grid(plot_iSNVs, plot_iSNVs_control,
                             nrow = 2,
-                            rel_heights = c(1,.5))
+                            rel_heights = c(1,.3))
+plot_total_iSNVs <- plot_grid(plot_total_iSNVs, plot_total_iSNVs_controls,
+                              nrow = 1,
+                              rel_widths = c(1,.1), 
+                              rel_heights = c(1,1), 
+                              align = "r")
+plot_divergence <- plot_grid(plot_divergence, plot_divergence_controls,
+                             nrow = 1,
+                             rel_widths = c(1,.1), 
+                             rel_heights = c(1,1), 
+                             align = "r")
 
 Supp1 <- plot_grid(plot_iSNVs_all, 
                    plot_total_iSNVs, 
                    plot_divergence,
                    nrow = 3, ncol = 1,
-                   rel_heights = c(.6, .2, .2))
-
+                   rel_heights = c(.85, .2, .2))
 
 #### Supp 2: iSNV frequency spectrum ####
 # assign VCF to df_sub50AF
@@ -1514,8 +1646,8 @@ plot_spec <- ggplot() +
   geom_text(data = df_mut_bins_prop_noNeut, 
             aes(x = Bins, y = Prop, group = Mutation_type, label = Count),
             position=position_dodge2(0.9), vjust=-0.25, size = 1.5) + 
-  geom_point(data = df_mut_bins_neutral, aes(x = Bins, y = Prop)) + 
-  geom_line(data = df_mut_bins_neutral, aes(x = Bins, y = Prop, group = 1)) +
+  geom_point(data = df_mut_bins_neutral, aes(x = Bins, y = Prop), alpha = 1, stroke=NA) + 
+  geom_line(data = df_mut_bins_neutral, aes(x = Bins, y = Prop, group = 1), alpha = .5) +
   scale_fill_manual(values = palette_muts) + 
   labs(x = "Within-host iSNV frequency bin", 
        y = "Proportion of variants per mutation type") + 
@@ -1530,38 +1662,16 @@ plot_spec <- ggplot() +
 
 
 #### save ####
-setwd(dir_save)
+setwd(dir_save); getwd(); head(dir())
 #Fig1
-ggsave("Fig1_snpgenie.pdf", plot_snpgenie,
-       width = 15, height = 5, 
+ggsave("Fig1_snpgenie.pdf", Fig1,
+       width = 8.5, height = 5, 
        units = "in", dpi = 320)
-#Fig2
-ggsave("Fig2_diversity.pdf", plot_R,
-       width = 15, height = 5, 
+#Supp1
+ggsave("Supp1_iSNVs.pdf", Supp1,
+       width = 8.5, height = 11, 
        units = "in", dpi = 320)
-#Fig4
-ggsave("Fig4_iSNVs_noBC.pdf", plot_iSNVs_all,
-       width = 8, height = 6, 
-       units = "in", dpi = 320)
-#Fig5
-ggsave("Fig5_spectrum_facet.pdf", plot_spec,
-       width = 9, height = 9,
-       units = "in", dpi = 320)
-#Fig6
-ggsave("Fig5_divergence.pdf", plot_divergence_counts,
-       width = 5, height = 4,
-       units = "in", dpi = 320)
-
-#Fig1
-ggsave("Fig3_barcodes.pdf", plot,
-       width = 5, height = 5, 
-       units = "in", dpi = 320)
-ggsave("Fig3_barcodes_dot.pdf", plot1,
-       width = 7.5, height = 2.5, 
-       units = "in", dpi = 320)
-ggsave("Fig3_barcodes_relprop.pdf", plot_rel_prop,
-       width = 10, height = 5, 
-       units = "in", dpi = 320)
-ggsave("Fig4_barcodes_calcs.pdf", plot_bc_stats,
-       width = 5, height = 5, 
+#Supp2
+ggsave("Supp2_spectrum_facet.pdf", plot_spec,
+       width = 8.5, height = 5,
        units = "in", dpi = 320)

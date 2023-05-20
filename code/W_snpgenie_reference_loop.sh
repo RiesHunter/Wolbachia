@@ -5,7 +5,7 @@ echo ""; echo "-------------------- Starting... --------------------"
 
 ### ---------------------------------------------------------------------------------------------------- ###
 ## Parameters
-workingdir="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run"
+workingdir="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/09_reference_VCF/noBC_no5155"
 reference="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/refseqs/PRVABC59.fasta"
 gtf="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/refseqs/PRVABC59.gtf"
 bed="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/refseqs/PRVABC59.bed"

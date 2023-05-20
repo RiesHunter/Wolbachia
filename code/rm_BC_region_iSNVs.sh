@@ -22,6 +22,22 @@ bcftools filter \
  -o ${sample}_noBC.vcf \
  -e 'POS>=4007 && POS<=4030' \
  ${sample}.vcf
+
+bcftools filter \
+ -o ${sample}_noBC_no5155.vcf \
+ -e 'POS=5155' \
+ ${sample}_noBC.vcf
+
+bcftools filter \
+ -o ${sample}_noBC_no5155_no1964.vcf \
+ -e 'POS=1964' \
+ ${sample}_noBC_no5155.vcf
+
+ bcftools filter \
+ -o ${sample}_cleaned.vcf \
+ -e 'POS=8488' \
+ ${sample}_noBC_no5155_no1964.vcf
+
 # add one more to the pile!
 n=n+1
 echo""; echo "-------------------- [$n/$x]: $sample --------------------"

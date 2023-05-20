@@ -52,8 +52,10 @@ samtools view -h ./06_norm/sorted_relaxed_norm_${sample}.bam "KU501215.1:4007-40
  # for some reason, I had to change "KU501215_1:4007-4030" to "KU501215.1:4007-4030" 
 
 ## convert aligned reads to fastq
-bamToFastq -i ./06_norm/BCregion_sorted_relaxed_norm_${sample}.bam \
-  -fq ./06_norm/BCregion_sorted_relaxed_${sample}.fastq 2>>_stderr.txt
+#bamToFastq -i ./06_norm/BCregion_sorted_relaxed_norm_${sample}.bam \
+#  -fq ./06_norm/BCregion_sorted_relaxed_${sample}.fastq 2>>_stderr.txt
+ # bamToFastq has doubling bug (samtools fastq does not)
+samtools fastq ./06_norm/BCregion_sorted_relaxed_norm_${sample}.bam > ./06_norm/BCregion_sorted_relaxed_${sample}.fastq
 
 ## convert fastq to fasta
 seqtk seq -a ./06_norm/BCregion_sorted_relaxed_${sample}.fastq > ./06_norm/BCregion_sorted_relaxed_${sample}.fasta 2>>_stderr.txt

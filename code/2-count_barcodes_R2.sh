@@ -5,7 +5,7 @@ echo ""; echo "-------------------- Starting barcode analyses... ---------------
 
 ### ---------------------------------------------------------------------------------------------------- ###
 ## Parameters
-workingdir="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run/test_r2"
+workingdir="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/reads/data/run"
 reference="/Users/rieshunter/Google Drive/Shared drives/TCF lab/Current Lab Members/Hunter_Ries/Wolbachia/data/refseqs/PRVABC59.fasta"
 
 ## Index
